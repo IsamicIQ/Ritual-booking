@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Schedule - Ritual Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo"><h1><a href="index.html" style="text-decoration:none;color:inherit;">Ritual Studio</a></h1></div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="schedule.html" class="active">Schedule</a></li>
+                    <li><a href="my-bookings.html">My Bookings</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+                <button class="btn-primary nav-cta" onclick="location.href='index.html#classes'">Book Now</button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container">
+            <h2>Class Schedule</h2>
+            <p>Browse available classes and book your spot</p>
+        </div>
+    </section>
+
+    <section class="schedule-section">
+        <div class="container">
+            <!-- Filters -->
+            <div class="schedule-filters">
+                <div class="filter-group">
+                    <label for="classFilter">Filter by class:</label>
+                    <select id="classFilter">
+                        <option value="all">All Classes</option>
+                    </select>
+                </div>
+                <div class="week-nav">
+                    <button class="btn-outline" id="prevWeek">&larr; Previous</button>
+                    <span id="weekLabel" class="week-label"></span>
+                    <button class="btn-outline" id="nextWeek">Next &rarr;</button>
+                </div>
+            </div>
+
+            <!-- Desktop Calendar Grid -->
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Rendered by JS -->
+            </div>
+
+            <!-- Mobile Day List -->
+            <div class="day-list" id="dayList">
+                <!-- Rendered by JS -->
+            </div>
+
+            <div class="schedule-loading" id="scheduleLoading">Loading schedule...</div>
+            <div class="schedule-empty" id="scheduleEmpty" style="display:none;">No classes found for this week.</div>
+        </div>
+    </section>
+
+    <!-- Booking Modal (same pattern as index.html) -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <h2>Book This Class</h2>
+            <p class="modal-subtitle" id="modalSlotInfo"></p>
+            <form id="bookingForm">
+                <input type="hidden" id="slotClassId" name="class_id">
+                <input type="hidden" id="slotDate" name="date">
+                <input type="hidden" id="slotTime" name="time">
+                <input type="hidden" id="slotTimeSlotId" name="time_slot_id">
+                <div class="form-group">
+                    <label for="bookingName">Full Name</label>
+                    <input type="text" id="bookingName" name="name" required placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label for="bookingEmail">Email</label>
+                    <input type="email" id="bookingEmail" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="bookingPhone">Phone Number</label>
+                    <input type="tel" id="bookingPhone" name="phone" required placeholder="0700 000 000">
+                </div>
+                <div class="form-group">
+                    <label for="bookingPackage">Package Type</label>
+                    <select id="bookingPackage" name="package">
+                        <option value="single">Single Class</option>
+                        <option value="intro">Intro Package</option>
+                        <option value="monthly">Monthly Package</option>
+                        <option value="3month">3-Month Package</option>
+                        <option value="pack_5">5-Pack</option>
+                        <option value="pack_8">8-Pack</option>
+                        <option value="pack_10">10-Pack</option>
+                        <option value="pack_12">12-Pack</option>
+                        <option value="member">Member (Cold Plunge)</option>
+                        <option value="non_member">Non-Member (Cold Plunge)</option>
+                        <option value="bundle_fire_ice">Fire and Ice Bundle</option>
+                        <option value="bundle_pilates_plunge">Pilates and Plunge Bundle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bookingNotes">Notes (optional)</label>
+                    <textarea id="bookingNotes" name="notes" rows="3" placeholder="Any injuries, preferences, or questions"></textarea>
+                </div>
+                <button type="submit" class="btn-primary btn-large" style="width:100%">Confirm Booking</button>
+            </form>
+            <div class="booking-success" id="bookingSuccess" style="display:none;">
+                <h3>Booking Confirmed!</h3>
+                <p>Redirecting to payment...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Ritual Studio</h3>
+                    <p>Medically focused yoga and Pilates studio in Nairobi</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="schedule.html">Schedule</a></li>
+                        <li><a href="my-bookings.html">My Bookings</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>351 UN Crescent, Gigiri</li>
+                        <li>Nairobi, Kenya</li>
+                        <li><a href="mailto:ritualstudio8@gmail.com">ritualstudio8@gmail.com</a></li>
+                        <li><a href="tel:+254758097553">0758-097-553</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Ritual Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="supabase-config.js"></script>
+    <script src="email-service.js"></script>
+    <script src="schedule.js"></script>
+</body>
+</html>

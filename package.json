@@ -1,0 +1,16 @@
+{
+  "name": "ritual-studios-booking",
+  "version": "1.0.0",
+  "description": "Booking system for Ritual Studios in Nairobi",
+  "scripts": {
+    "dev": "npx http-server . -p 8000 -o",
+    "start": "npx http-server . -p 8000 -o"
+  },
+  "keywords": [
+    "booking",
+    "ritual-studios",
+    "nairobi"
+  ],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - Ritual Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo"><h1><a href="index.html" style="text-decoration:none;color:inherit;">Ritual Studio</a></h1></div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="schedule.html">Schedule</a></li>
+                    <li><a href="my-bookings.html" class="active">My Bookings</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+                <button class="btn-primary nav-cta" onclick="location.href='schedule.html'">Book Now</button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container">
+            <h2>My Bookings</h2>
+            <p>View and manage your class bookings</p>
+        </div>
+    </section>
+
+    <section class="bookings-section">
+        <div class="container">
+            <!-- Lookup Form -->
+            <div class="lookup-form" id="lookupForm">
+                <div class="lookup-card">
+                    <h3>Find Your Bookings</h3>
+                    <p>Enter the email address you used when booking</p>
+                    <form id="emailLookup">
+                        <div class="form-group">
+                            <label for="lookupEmail">Email Address</label>
+                            <input type="email" id="lookupEmail" required placeholder="you@example.com">
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%">Find Bookings</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="bookingsResults" style="display:none;">
+                <div class="bookings-header">
+                    <h3 id="resultsTitle"></h3>
+                    <button class="btn-outline" id="changeEmail">Change Email</button>
+                </div>
+
+                <div id="upcomingSection">
+                    <h4 class="bookings-subtitle">Upcoming</h4>
+                    <div class="bookings-list" id="upcomingList"></div>
+                </div>
+
+                <div id="pastSection">
+                    <h4 class="bookings-subtitle">Past</h4>
+                    <div class="bookings-list" id="pastList"></div>
+                </div>
+
+                <div class="bookings-empty" id="noBookings" style="display:none;">
+                    <p>No bookings found for this email.</p>
+                    <a href="schedule.html" class="btn-primary">Browse Schedule</a>
+                </div>
+            </div>
+
+            <div class="schedule-loading" id="bookingsLoading" style="display:none;">Loading bookings...</div>
+        </div>
+    </section>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal-overlay" id="cancelModal">
+        <div class="modal" style="max-width:400px;">
+            <button class="modal-close" id="cancelModalClose">&times;</button>
+            <h2>Cancel Booking</h2>
+            <p id="cancelInfo" style="margin-bottom:1.5rem;color:var(--text-light);"></p>
+            <div style="display:flex;gap:1rem;">
+                <button class="btn-secondary" id="cancelNo" style="flex:1;">Keep Booking</button>
+                <button class="btn-primary" id="cancelYes" style="flex:1;background:#c0392b;">Cancel It</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Ritual Studio</h3>
+                    <p>Medically focused yoga and Pilates studio in Nairobi</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="schedule.html">Schedule</a></li>
+                        <li><a href="my-bookings.html">My Bookings</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>351 UN Crescent, Gigiri</li>
+                        <li>Nairobi, Kenya</li>
+                        <li><a href="mailto:ritualstudio8@gmail.com">ritualstudio8@gmail.com</a></li>
+                        <li><a href="tel:+254758097553">0758-097-553</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Ritual Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="supabase-config.js"></script>
+    <script src="my-bookings.js"></script>
+</body>
+</html>

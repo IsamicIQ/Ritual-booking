@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Class - Ritual Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            background: #f5f4f0;
+            min-height: 100vh;
+        }
+        .booking-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .booking-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .booking-header h1 {
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: #3d4a3d;
+            margin-bottom: 0.5rem;
+        }
+        .booking-header p {
+            color: #6b766b;
+            font-size: 1.05rem;
+        }
+        .classes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .class-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .class-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .class-card h3 {
+            color: #2d3e2d;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .class-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .class-card .btn-primary {
+            width: 100%;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 50, 45, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: #fefdfb;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+            border: 1px solid rgba(229, 227, 223, 0.8);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.75rem;
+            cursor: pointer;
+            color: #8a928a;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: #3d4a3d;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #3d4a3d;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e3df;
+            border-radius: 8px;
+            background: #fefdfb;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4a5d4a;
+        }
+        .booking-success {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .booking-success h3 {
+            color: #3d4a3d;
+            margin-bottom: 1rem;
+        }
+        .booking-success p {
+            color: #6b766b;
+            margin-bottom: 1.5rem;
+        }
+        .error-message {
+            background: #fdf2f2;
+            color: #9b5a5a;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .success-message {
+            background: #f2f7f2;
+            color: #5a7a5a;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #eee;
+        }
+        .auth-tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 1rem;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .auth-tab.active {
+            color: #3d4a3d;
+            border-bottom-color: #4a5d4a;
+            font-weight: 600;
+        }
+
+        /* Calendar */
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .calendar-month-label {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #3d4a3d;
+            margin: 0;
+        }
+        .calendar-container {
+            background: #fefdfb;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+            border: 1px solid rgba(229, 227, 223, 0.6);
+            margin-bottom: 2rem;
+        }
+        .calendar-days-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .cal-day-name {
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6b766b;
+            padding: 0.5rem 0;
+        }
+        .calendar-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .cal-day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.5rem 0.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: background 0.2s, color 0.2s;
+            min-height: 90px;
+        }
+        .cal-day-number {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.35rem;
+        }
+        .btn-check-classes {
+            background: #4a5d4a;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 0.3rem 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            text-align: center;
+            line-height: 1.2;
+            width: 100%;
+            max-width: 70px;
+        }
+        .btn-check-classes:hover:not(:disabled) {
+            background: #3d4a3d;
+            transform: scale(1.02);
+        }
+        .btn-check-classes:disabled,
+        .btn-check-disabled {
+            background: #c5c9c5;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .cal-day-empty {
+            cursor: default;
+            background: transparent;
+            min-height: 90px;
+        }
+        .cal-day-past {
+            color: #c5c9c5;
+            cursor: default;
+        }
+        .cal-day-past .cal-day-number {
+            color: #c5c9c5;
+        }
+        .cal-day-past.cal-day-has-classes { cursor: default; }
+        .cal-day:not(.cal-day-empty):not(.cal-day-past):hover {
+            background: #ebeae6;
+        }
+        .cal-day-has-classes:not(.cal-day-past) {
+            background: #eef2ee;
+            color: #3d4a3d;
+        }
+        .cal-day-has-classes:not(.cal-day-past):hover {
+            background: #dfe8df;
+        }
+        .cal-day-selected {
+            background: #4a5d4a !important;
+            color: #fefdfb !important;
+        }
+        .cal-day-selected .cal-day-number {
+            color: #fefdfb !important;
+        }
+        .cal-day-selected .btn-check-classes {
+            background: #fefdfb;
+            color: #3d4a3d;
+        }
+        .cal-day-selected .btn-check-classes:hover {
+            background: #eef2ee;
+        }
+        .day-detail-panel {
+            background: #fefdfb;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+            border: 1px solid rgba(229, 227, 223, 0.6);
+            margin-top: 0;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+        }
+        .day-detail-panel.day-detail-visible {
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 1.5rem;
+        }
+        .day-detail-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #3d4a3d;
+            margin-bottom: 1rem;
+        }
+        .day-classes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .day-class-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: #f8f7f4;
+            border: 1px solid #e5e3df;
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+        .day-class-info {
+            flex: 1;
+            min-width: 160px;
+        }
+        .day-class-name {
+            display: block;
+            font-weight: 600;
+            color: #3d4a3d;
+            margin-bottom: 2px;
+        }
+        .day-class-time {
+            font-size: 0.9rem;
+            color: #5c665c;
+        }
+        .day-class-instructor {
+            display: block;
+            font-size: 0.85rem;
+            color: #7a857a;
+            margin-top: 2px;
+        }
+        .day-class-spots {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4a5d4a;
+            min-width: 100px;
+        }
+        .day-class-spots.spots-full {
+            color: #a05c5c;
+        }
+        .day-class-card .btn-book-slot {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.9rem;
+        }
+        .day-class-card .btn-book-slot:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .no-classes-msg {
+            color: #6b766b;
+            font-size: 1rem;
+            padding: 1rem 0;
+        }
+
+        /* Responsive styles for calendar buttons */
+        @media (max-width: 600px) {
+            .cal-day {
+                min-height: 75px;
+                padding: 0.35rem 0.15rem;
+            }
+            .cal-day-number {
+                font-size: 0.9rem;
+            }
+            .btn-check-classes {
+                font-size: 0.55rem;
+                padding: 0.25rem 0.2rem;
+                max-width: 55px;
+            }
+        }
+        @media (max-width: 400px) {
+            .cal-day {
+                min-height: 65px;
+                padding: 0.25rem 0.1rem;
+            }
+            .btn-check-classes {
+                font-size: 0.5rem;
+                padding: 0.2rem 0.15rem;
+                max-width: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Simple Header -->
+    <nav class="navbar" style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div class="container">
+            <div class="nav-content" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="logo">
+                    <h1 style="margin: 0;">Ritual Studio</h1>
+                </div>
+                <div id="authSection" style="display: flex; gap: 1rem;">
+                    <button class="btn-outline" id="loginBtn">Login</button>
+                    <button class="btn-primary" id="signupBtn">Sign Up</button>
+                </div>
+                <div id="userSection" style="display: none; align-items: center; gap: 1rem;">
+                    <span id="userName" style="color: #3d4a3d;"></span>
+                    <button class="btn-outline" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Calendar Booking -->
+    <div class="booking-container">
+        <div class="booking-header">
+            <h1>Book Your Class</h1>
+            <p>Click a day to see Hot Pilates, Hot Yoga & Reformer classes with spots remaining</p>
+        </div>
+
+        <div class="calendar-controls">
+            <button class="btn-outline" id="prevMonth">&larr; Previous</button>
+            <h2 id="calendarMonthLabel" class="calendar-month-label"></h2>
+            <button class="btn-outline" id="nextMonth">Next &rarr;</button>
+        </div>
+
+        <div id="calendarContainer" class="calendar-container"></div>
+
+        <div id="dayDetailPanel" class="day-detail-panel">
+            <h3 id="dayDetailTitle" class="day-detail-title">Classes</h3>
+            <div id="dayClassesList" class="day-classes-list"></div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <button class="modal-close" id="loginModalClose">&times;</button>
+            <h2>Login</h2>
+            <p class="modal-subtitle" style="color: #6b766b; margin-bottom: 1.5rem;">Sign in to your account</p>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email *</label>
+                    <input type="email" id="loginEmail" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password *</label>
+                    <input type="password" id="loginPassword" name="password" required placeholder="Your password">
+                </div>
+                <button type="submit" class="btn-primary btn-large" style="width:100%">Login</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; color: #6b766b;">
+                Don't have an account? <a href="#" id="switchToSignup" style="color: #4a5d4a; text-decoration: underline;">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal">
+            <button class="modal-close" id="signupModalClose">&times;</button>
+            <h2>Sign Up</h2>
+            <p class="modal-subtitle" style="color: #6b766b; margin-bottom: 1.5rem;">Create a new account</p>
+            <div id="signupError" class="error-message" style="display: none;"></div>
+            <div id="signupSuccess" class="success-message" style="display: none;"></div>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupName">Full Name *</label>
+                    <input type="text" id="signupName" name="name" required placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email *</label>
+                    <input type="email" id="signupEmail" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone Number *</label>
+                    <input type="tel" id="signupPhone" name="phone" required placeholder="0700 000 000">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password *</label>
+                    <input type="password" id="signupPassword" name="password" required placeholder="At least 6 characters" minlength="6">
+                </div>
+                <button type="submit" class="btn-primary btn-large" style="width:100%">Sign Up</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; color: #6b766b;">
+                Already have an account? <a href="#" id="switchToLogin" style="color: #4a5d4a; text-decoration: underline;">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <h2>Book This Class</h2>
+            <p class="modal-subtitle" id="modalSlotInfo" style="color: #6b766b; margin-bottom: 1.5rem;"></p>
+            <form id="bookingForm">
+                <input type="hidden" id="slotClassId" name="class_id">
+                <input type="hidden" id="slotDate" name="date">
+                <input type="hidden" id="slotTime" name="time">
+                <input type="hidden" id="slotTimeSlotId" name="time_slot_id">
+                <div class="form-group">
+                    <label for="bookingName">Full Name *</label>
+                    <input type="text" id="bookingName" name="name" required placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label for="bookingEmail">Email *</label>
+                    <input type="email" id="bookingEmail" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="bookingPhone">Phone Number *</label>
+                    <input type="tel" id="bookingPhone" name="phone" required placeholder="0700 000 000">
+                </div>
+                <div class="form-group">
+                    <label for="bookingPackage">Package Type</label>
+                    <select id="bookingPackage" name="package">
+                        <option value="single">Single Class</option>
+                        <option value="intro">Intro Package</option>
+                        <option value="monthly">Monthly Package</option>
+                        <option value="3month">3-Month Package</option>
+                        <option value="pack_5">5-Pack</option>
+                        <option value="pack_8">8-Pack</option>
+                        <option value="pack_10">10-Pack</option>
+                        <option value="pack_12">12-Pack</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bookingNotes">Notes (optional)</label>
+                    <textarea id="bookingNotes" name="notes" rows="3" placeholder="Any injuries, preferences, or questions"></textarea>
+                </div>
+                <button type="submit" class="btn-primary btn-large" style="width:100%">Confirm Booking</button>
+            </form>
+            <div class="booking-success" id="bookingSuccess" style="display:none;">
+                <h3>✓ Booking Confirmed!</h3>
+                <p>Redirecting to payment...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Configuration -->
+    <script src="supabase-config.js"></script>
+    <!-- Authentication -->
+    <script src="auth.js"></script>
+    <script src="email-service.js"></script>
+    <!-- Calendar Booking -->
+    <script src="calendar.js"></script>
+    <script>
+        // Auth UI handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Login/Signup buttons
+            document.getElementById('loginBtn')?.addEventListener('click', () => {
+                document.getElementById('loginModal').classList.add('active');
+            });
+            document.getElementById('signupBtn')?.addEventListener('click', () => {
+                document.getElementById('signupModal').classList.add('active');
+            });
+            document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+                await window.authManager.signOut();
+            });
+
+            // Close modals
+            document.getElementById('loginModalClose')?.addEventListener('click', () => {
+                document.getElementById('loginModal').classList.remove('active');
+            });
+            document.getElementById('signupModalClose')?.addEventListener('click', () => {
+                document.getElementById('signupModal').classList.remove('active');
+            });
+
+            // Switch between login/signup
+            document.getElementById('switchToSignup')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('loginModal').classList.remove('active');
+                document.getElementById('signupModal').classList.add('active');
+            });
+            document.getElementById('switchToLogin')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('signupModal').classList.remove('active');
+                document.getElementById('loginModal').classList.add('active');
+            });
+
+            // Login form
+            document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                const errorDiv = document.getElementById('loginError');
+
+                const result = await window.authManager.signIn(email, password);
+                if (result.success) {
+                    document.getElementById('loginModal').classList.remove('active');
+                    document.getElementById('loginForm').reset();
+                    errorDiv.style.display = 'none';
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.style.display = 'block';
+                }
+            });
+
+            // Signup form
+            document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const phone = document.getElementById('signupPhone').value;
+                const password = document.getElementById('signupPassword').value;
+                const errorDiv = document.getElementById('signupError');
+                const successDiv = document.getElementById('signupSuccess');
+
+                const result = await window.authManager.signUp(email, password, name, phone);
+                if (result.success) {
+                    successDiv.textContent = result.message;
+                    successDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    document.getElementById('signupForm').reset();
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        document.getElementById('signupModal').classList.remove('active');
+                        successDiv.style.display = 'none';
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.style.display = 'block';
+                    successDiv.style.display = 'none';
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

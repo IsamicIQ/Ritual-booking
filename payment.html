@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Ritual Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo"><h1><a href="index.html" style="text-decoration:none;color:inherit;">Ritual Studio</a></h1></div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="schedule.html">Schedule</a></li>
+                    <li><a href="my-bookings.html">My Bookings</a></li>
+                    <li><a href="index.html#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container">
+            <h2>Complete Payment</h2>
+            <p>Secure your booking by completing payment</p>
+        </div>
+    </section>
+
+    <section class="payment-section">
+        <div class="container">
+            <div class="payment-layout">
+                <!-- Booking Summary -->
+                <div class="payment-summary" id="paymentSummary">
+                    <h3>Booking Summary</h3>
+                    <div class="summary-loading" id="summaryLoading">Loading booking details...</div>
+                    <div id="summaryContent" style="display:none;">
+                        <div class="summary-row"><span>Class</span><strong id="sumClass"></strong></div>
+                        <div class="summary-row"><span>Date</span><strong id="sumDate"></strong></div>
+                        <div class="summary-row"><span>Time</span><strong id="sumTime"></strong></div>
+                        <div class="summary-row"><span>Package</span><strong id="sumPackage"></strong></div>
+                        <div class="summary-row"><span>Name</span><strong id="sumName"></strong></div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row summary-total"><span>Total</span><strong id="sumTotal"></strong></div>
+                    </div>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="payment-methods" id="paymentMethods" style="display:none;">
+                    <h3>Choose Payment Method</h3>
+
+                    <div class="payment-tabs">
+                        <button class="payment-tab active" data-method="mpesa">M-Pesa</button>
+                        <button class="payment-tab" data-method="stripe">Card (Stripe)</button>
+                    </div>
+
+                    <!-- M-Pesa -->
+                    <div class="payment-form" id="mpesaForm">
+                        <p class="payment-desc">Enter your M-Pesa phone number. You will receive an STK push to complete payment.</p>
+                        <div class="form-group">
+                            <label for="mpesaPhone">M-Pesa Phone Number</label>
+                            <input type="tel" id="mpesaPhone" required placeholder="254700000000" pattern="254[0-9]{9}">
+                            <small style="color:var(--text-light);">Format: 254XXXXXXXXX</small>
+                        </div>
+                        <button class="btn-primary btn-large" style="width:100%" id="mpesaPay">Pay with M-Pesa</button>
+                    </div>
+
+                    <!-- Stripe -->
+                    <div class="payment-form" id="stripeForm" style="display:none;">
+                        <p class="payment-desc">Pay securely with your credit or debit card.</p>
+                        <div id="stripeCardElement" class="stripe-element"></div>
+                        <div id="stripeError" class="stripe-error"></div>
+                        <button class="btn-primary btn-large" style="width:100%;margin-top:1rem;" id="stripePay">Pay with Card</button>
+                    </div>
+
+                    <!-- Processing / Success / Failure -->
+                    <div class="payment-status" id="paymentProcessing" style="display:none;">
+                        <div class="spinner"></div>
+                        <p>Processing payment...</p>
+                    </div>
+                    <div class="payment-status payment-success" id="paymentSuccess" style="display:none;">
+                        <h3>Payment Successful!</h3>
+                        <p>Your booking is confirmed. A confirmation email has been sent.</p>
+                        <a href="my-bookings.html" class="btn-primary" style="margin-top:1rem;display:inline-block;">View My Bookings</a>
+                    </div>
+                    <div class="payment-status payment-failure" id="paymentFailure" style="display:none;">
+                        <h3>Payment Failed</h3>
+                        <p id="failureReason"></p>
+                        <button class="btn-primary" id="retryPayment" style="margin-top:1rem;">Try Again</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No booking found -->
+            <div class="payment-error" id="paymentError" style="display:none;">
+                <h3>Booking Not Found</h3>
+                <p>We couldn't find the booking. Please try booking again.</p>
+                <a href="schedule.html" class="btn-primary" style="margin-top:1rem;display:inline-block;">Browse Schedule</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Ritual Studio</h3>
+                    <p>Medically focused yoga and Pilates studio in Nairobi</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>351 UN Crescent, Gigiri, Nairobi</li>
+                        <li><a href="mailto:ritualstudio8@gmail.com">ritualstudio8@gmail.com</a></li>
+                        <li><a href="tel:+254758097553">0758-097-553</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Ritual Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="supabase-config.js"></script>
+    <script src="payment.js"></script>
+</body>
+</html>
