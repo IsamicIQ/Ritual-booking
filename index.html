@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
-            background: #ffd6e0;
+            background: #f5f4f0;
             min-height: 100vh;
         }
         .booking-container {
@@ -224,44 +224,55 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 4px;
         }
-        /* Mobile-first calendar day styles */
         .cal-day {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 0.4rem 0.2rem;
+            justify-content: flex-start;
+            padding: 0.5rem 0.25rem;
             border-radius: 8px;
             font-weight: 500;
-            transition: background 0.2s, color 0.2s, transform 0.2s;
-            min-height: 48px;
-            cursor: pointer;
-            position: relative;
+            font-size: 0.95rem;
+            transition: background 0.2s, color 0.2s;
+            min-height: 90px;
         }
         .cal-day-number {
             font-weight: 600;
             font-size: 1rem;
+            margin-bottom: 0.35rem;
         }
-        /* Mobile: Hide button, show dot indicator for days with classes */
         .btn-check-classes {
-            display: none;
+            background: #ffe5ec;
+            color: #4f772d;
+            border: 1px solid #4f772d;
+            border-radius: 4px;
+            padding: 0.3rem 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, color 0.2s;
+            text-align: center;
+            line-height: 1.2;
+            width: 100%;
+            max-width: 70px;
         }
-        /* Dot indicator for mobile - shows which days have classes */
-        .cal-day-has-classes:not(.cal-day-past)::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 6px;
+        .btn-check-classes:hover:not(:disabled) {
             background: #4f772d;
-            border-radius: 50%;
+            color: #fff;
+            transform: scale(1.02);
+        }
+        .btn-check-classes:disabled,
+        .btn-check-disabled {
+            background: #f5f5f5;
+            color: #c5c9c5;
+            border-color: #c5c9c5;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
         .cal-day-empty {
             cursor: default;
             background: transparent;
-            min-height: 48px;
+            min-height: 90px;
         }
         .cal-day-past {
             color: #c5c9c5;
@@ -271,88 +282,31 @@
             color: #c5c9c5;
         }
         .cal-day-past.cal-day-has-classes { cursor: default; }
-        .cal-day-past.cal-day-has-classes::after {
-            background: #c5c9c5;
-        }
         .cal-day:not(.cal-day-empty):not(.cal-day-past):hover {
             background: #ebeae6;
-            transform: scale(1.05);
-        }
-        .cal-day:not(.cal-day-empty):not(.cal-day-past):active {
-            transform: scale(0.98);
         }
         .cal-day-has-classes:not(.cal-day-past) {
-            background: #ffe5ec;
+            background: #eef2ee;
             color: #3d4a3d;
         }
         .cal-day-has-classes:not(.cal-day-past):hover {
-            background: #ffd6e0;
+            background: #dfe8df;
         }
         .cal-day-selected {
-            background: #4f772d !important;
+            background: #4a5d4a !important;
             color: #fefdfb !important;
         }
         .cal-day-selected .cal-day-number {
             color: #fefdfb !important;
         }
-        .cal-day-selected::after {
-            background: #fff !important;
+        .cal-day-selected .btn-check-classes {
+            background: #ffe5ec;
+            color: #4f772d;
+            border-color: #4f772d;
         }
-
-        /* Tablet and up: Show buttons */
-        @media (min-width: 768px) {
-            .cal-day {
-                min-height: 100px;
-                padding: 0.5rem 0.3rem;
-                justify-content: flex-start;
-            }
-            .cal-day-number {
-                margin-bottom: 0.4rem;
-            }
-            .cal-day-has-classes:not(.cal-day-past)::after {
-                display: none;
-            }
-            .btn-check-classes {
-                display: block;
-                background: #ffe5ec;
-                color: #4f772d;
-                border: 1px solid #4f772d;
-                border-radius: 4px;
-                padding: 0.35rem 0.5rem;
-                font-size: 0.7rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: background 0.2s, transform 0.1s, color 0.2s;
-                text-align: center;
-                line-height: 1.2;
-                width: 100%;
-                max-width: 80px;
-            }
-            .btn-check-classes:hover:not(:disabled) {
-                background: #4f772d;
-                color: #fff;
-                transform: scale(1.02);
-            }
-            .btn-check-classes:disabled,
-            .btn-check-disabled {
-                background: #f5f5f5;
-                color: #c5c9c5;
-                border-color: #c5c9c5;
-                cursor: not-allowed;
-                opacity: 0.6;
-            }
-            .cal-day-empty {
-                min-height: 100px;
-            }
-            .cal-day-selected .btn-check-classes {
-                background: #ffe5ec;
-                color: #4f772d;
-                border-color: #4f772d;
-            }
-            .cal-day-selected .btn-check-classes:hover {
-                background: #4f772d;
-                color: #fff;
-            }
+        .cal-day-selected .btn-check-classes:hover {
+            background: #4f772d;
+            color: #fff;
         }
         .day-detail-panel {
             background: #fefdfb;
@@ -483,80 +437,30 @@
             padding: 1rem 0;
         }
 
-        /* Mobile-first responsive styles */
-
-        /* Mobile: Stack calendar controls */
-        .calendar-controls {
-            flex-direction: column;
-            gap: 0.75rem;
-            text-align: center;
-        }
-        .calendar-controls .btn-outline {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-        }
-        .calendar-month-label {
-            order: -1;
-            font-size: 1.2rem;
-        }
-
-        /* Mobile: Compact header */
-        .booking-header h1 {
-            font-size: 1.75rem;
-        }
-        .booking-header p {
-            font-size: 0.95rem;
-            padding: 0 1rem;
-        }
-
-        /* Mobile: Smaller day class cards */
-        .day-class-card {
-            padding: 0.75rem 1rem;
-            gap: 0.75rem;
-        }
-        .day-class-info {
-            min-width: 120px;
-        }
-        .day-class-name {
-            font-size: 0.95rem;
-        }
-        .day-class-time {
-            font-size: 0.85rem;
-        }
-        .day-class-spots {
-            font-size: 0.85rem;
-            min-width: auto;
-        }
-        .day-class-card .btn-book-slot {
-            padding: 0.4rem 1rem;
-            font-size: 0.85rem;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-
-        /* Tablet and up */
-        @media (min-width: 768px) {
-            .calendar-controls {
-                flex-direction: row;
-                text-align: left;
+        /* Responsive styles for calendar buttons */
+        @media (max-width: 600px) {
+            .cal-day {
+                min-height: 75px;
+                padding: 0.35rem 0.15rem;
             }
-            .calendar-month-label {
-                order: 0;
-                font-size: 1.4rem;
+            .cal-day-number {
+                font-size: 0.9rem;
             }
-            .booking-header h1 {
-                font-size: 2.25rem;
+            .btn-check-classes {
+                font-size: 0.55rem;
+                padding: 0.25rem 0.2rem;
+                max-width: 55px;
             }
-            .booking-header p {
-                font-size: 1.05rem;
+        }
+        @media (max-width: 400px) {
+            .cal-day {
+                min-height: 65px;
+                padding: 0.25rem 0.1rem;
             }
-            .day-class-card {
-                padding: 1rem 1.25rem;
-                gap: 1rem;
-            }
-            .day-class-card .btn-book-slot {
-                width: auto;
-                margin-top: 0;
+            .btn-check-classes {
+                font-size: 0.5rem;
+                padding: 0.2rem 0.15rem;
+                max-width: 48px;
             }
         }
     </style>

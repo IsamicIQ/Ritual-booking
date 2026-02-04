@@ -165,27 +165,6 @@ class CalendarManager {
         html += '</div>';
         container.innerHTML = html;
 
-        // Handle day cell clicks (for mobile where button is hidden)
-        container.querySelectorAll('.cal-day[data-date]').forEach(el => {
-            el.addEventListener('click', (e) => {
-                // Don't trigger if clicking the button (button has its own handler)
-                if (e.target.classList.contains('btn-check-classes')) return;
-
-                const dateStr = el.dataset.date;
-                const hasClasses = el.dataset.hasClasses === 'true';
-                const date = new Date(dateStr + 'T12:00:00');
-                if (date < today) return;
-                this.selectedDate = date;
-                this.renderCalendar();
-                if (hasClasses) {
-                    this.loadAndShowDayDetail(date);
-                } else {
-                    this.renderDayDetail(null, date);
-                }
-            });
-        });
-
-        // Handle button clicks (for desktop)
         container.querySelectorAll('.btn-check-classes').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
