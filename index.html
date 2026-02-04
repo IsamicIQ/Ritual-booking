@@ -225,58 +225,23 @@
             gap: 4px;
         }
         .cal-day {
+            aspect-ratio: 1;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding: 0.5rem 0.25rem;
+            justify-content: center;
             border-radius: 8px;
+            cursor: pointer;
             font-weight: 500;
             font-size: 0.95rem;
             transition: background 0.2s, color 0.2s;
-            min-height: 90px;
-        }
-        .cal-day-number {
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 0.35rem;
-        }
-        .btn-check-classes {
-            background: #4a5d4a;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 0.3rem 0.4rem;
-            font-size: 0.65rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            text-align: center;
-            line-height: 1.2;
-            width: 100%;
-            max-width: 70px;
-        }
-        .btn-check-classes:hover:not(:disabled) {
-            background: #3d4a3d;
-            transform: scale(1.02);
-        }
-        .btn-check-classes:disabled,
-        .btn-check-disabled {
-            background: #c5c9c5;
-            cursor: not-allowed;
-            opacity: 0.6;
         }
         .cal-day-empty {
             cursor: default;
             background: transparent;
-            min-height: 90px;
         }
         .cal-day-past {
             color: #c5c9c5;
             cursor: default;
-        }
-        .cal-day-past .cal-day-number {
-            color: #c5c9c5;
         }
         .cal-day-past.cal-day-has-classes { cursor: default; }
         .cal-day:not(.cal-day-empty):not(.cal-day-past):hover {
@@ -293,16 +258,6 @@
             background: #4a5d4a !important;
             color: #fefdfb !important;
         }
-        .cal-day-selected .cal-day-number {
-            color: #fefdfb !important;
-        }
-        .cal-day-selected .btn-check-classes {
-            background: #fefdfb;
-            color: #3d4a3d;
-        }
-        .cal-day-selected .btn-check-classes:hover {
-            background: #eef2ee;
-        }
         .day-detail-panel {
             background: #fefdfb;
             border-radius: 16px;
@@ -313,18 +268,21 @@
             max-height: 0;
             overflow: hidden;
             opacity: 0;
-            transition: max-height 0.3s, opacity 0.3s, margin 0.3s;
+            transform: translateY(-10px);
+            transition: max-height 0.4s ease-out, opacity 0.4s ease-out, margin 0.3s ease-out, transform 0.4s ease-out;
         }
         .day-detail-panel.day-detail-visible {
-            max-height: 500px;
+            max-height: 600px;
             opacity: 1;
             margin-top: 1.5rem;
+            transform: translateY(0);
         }
         .day-detail-title {
             font-size: 1.2rem;
             font-weight: 600;
             color: #3d4a3d;
             margin-bottom: 1rem;
+            animation: fadeSlideDown 0.4s ease-out;
         }
         .day-classes-list {
             display: flex;
@@ -340,6 +298,39 @@
             border: 1px solid #e5e3df;
             border-radius: 12px;
             flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUpFadeIn 0.5s ease-out forwards;
+        }
+        .day-class-card:nth-child(1) { animation-delay: 0.1s; }
+        .day-class-card:nth-child(2) { animation-delay: 0.2s; }
+        .day-class-card:nth-child(3) { animation-delay: 0.3s; }
+        .day-class-card:nth-child(4) { animation-delay: 0.4s; }
+        .day-class-card:nth-child(5) { animation-delay: 0.5s; }
+        .day-class-card:nth-child(6) { animation-delay: 0.6s; }
+        .day-class-card:nth-child(7) { animation-delay: 0.7s; }
+        .day-class-card:nth-child(8) { animation-delay: 0.8s; }
+
+        @keyframes slideUpFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .day-class-info {
             flex: 1;
@@ -370,9 +361,21 @@
         .day-class-spots.spots-full {
             color: #a05c5c;
         }
+        .day-class-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .day-class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #4a5d4a;
+        }
         .day-class-card .btn-book-slot {
             padding: 0.5rem 1.25rem;
             font-size: 0.9rem;
+            transition: transform 0.15s ease, background 0.2s ease;
+        }
+        .day-class-card .btn-book-slot:hover:not(:disabled) {
+            transform: scale(1.05);
         }
         .day-class-card .btn-book-slot:disabled {
             opacity: 0.5;
@@ -382,33 +385,6 @@
             color: #6b766b;
             font-size: 1rem;
             padding: 1rem 0;
-        }
-
-        /* Responsive styles for calendar buttons */
-        @media (max-width: 600px) {
-            .cal-day {
-                min-height: 75px;
-                padding: 0.35rem 0.15rem;
-            }
-            .cal-day-number {
-                font-size: 0.9rem;
-            }
-            .btn-check-classes {
-                font-size: 0.55rem;
-                padding: 0.25rem 0.2rem;
-                max-width: 55px;
-            }
-        }
-        @media (max-width: 400px) {
-            .cal-day {
-                min-height: 65px;
-                padding: 0.25rem 0.1rem;
-            }
-            .btn-check-classes {
-                font-size: 0.5rem;
-                padding: 0.2rem 0.15rem;
-                max-width: 48px;
-            }
         }
     </style>
 </head>
