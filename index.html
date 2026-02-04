@@ -225,23 +225,61 @@
             gap: 4px;
         }
         .cal-day {
-            aspect-ratio: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding: 0.5rem 0.25rem;
             border-radius: 8px;
-            cursor: pointer;
             font-weight: 500;
             font-size: 0.95rem;
             transition: background 0.2s, color 0.2s;
+            min-height: 90px;
+        }
+        .cal-day-number {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.35rem;
+        }
+        .btn-check-classes {
+            background: #ffe5ec;
+            color: #4f772d;
+            border: 1px solid #4f772d;
+            border-radius: 4px;
+            padding: 0.3rem 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, color 0.2s;
+            text-align: center;
+            line-height: 1.2;
+            width: 100%;
+            max-width: 70px;
+        }
+        .btn-check-classes:hover:not(:disabled) {
+            background: #4f772d;
+            color: #fff;
+            transform: scale(1.02);
+        }
+        .btn-check-classes:disabled,
+        .btn-check-disabled {
+            background: #f5f5f5;
+            color: #c5c9c5;
+            border-color: #c5c9c5;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
         .cal-day-empty {
             cursor: default;
             background: transparent;
+            min-height: 90px;
         }
         .cal-day-past {
             color: #c5c9c5;
             cursor: default;
+        }
+        .cal-day-past .cal-day-number {
+            color: #c5c9c5;
         }
         .cal-day-past.cal-day-has-classes { cursor: default; }
         .cal-day:not(.cal-day-empty):not(.cal-day-past):hover {
@@ -257,6 +295,18 @@
         .cal-day-selected {
             background: #4a5d4a !important;
             color: #fefdfb !important;
+        }
+        .cal-day-selected .cal-day-number {
+            color: #fefdfb !important;
+        }
+        .cal-day-selected .btn-check-classes {
+            background: #ffe5ec;
+            color: #4f772d;
+            border-color: #4f772d;
+        }
+        .cal-day-selected .btn-check-classes:hover {
+            background: #4f772d;
+            color: #fff;
         }
         .day-detail-panel {
             background: #fefdfb;
@@ -385,6 +435,33 @@
             color: #6b766b;
             font-size: 1rem;
             padding: 1rem 0;
+        }
+
+        /* Responsive styles for calendar buttons */
+        @media (max-width: 600px) {
+            .cal-day {
+                min-height: 75px;
+                padding: 0.35rem 0.15rem;
+            }
+            .cal-day-number {
+                font-size: 0.9rem;
+            }
+            .btn-check-classes {
+                font-size: 0.55rem;
+                padding: 0.25rem 0.2rem;
+                max-width: 55px;
+            }
+        }
+        @media (max-width: 400px) {
+            .cal-day {
+                min-height: 65px;
+                padding: 0.25rem 0.1rem;
+            }
+            .btn-check-classes {
+                font-size: 0.5rem;
+                padding: 0.2rem 0.15rem;
+                max-width: 48px;
+            }
         }
     </style>
 </head>
