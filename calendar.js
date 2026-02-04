@@ -165,6 +165,25 @@ class CalendarManager {
         html += '</div>';
         container.innerHTML = html;
 
+        // Make entire day cell clickable (for mobile and accessibility)
+        container.querySelectorAll('.cal-day[data-date]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn-check-classes')) return;
+                const dateStr = el.dataset.date;
+                const hasClasses = el.dataset.hasClasses === 'true';
+                const date = new Date(dateStr + 'T12:00:00');
+                if (date < today) return;
+                this.selectedDate = date;
+                this.renderCalendar();
+                if (hasClasses) {
+                    this.loadAndShowDayDetail(date);
+                } else {
+                    this.renderDayDetail(null, date);
+                }
+            });
+        });
+
+        // Button click handler
         container.querySelectorAll('.btn-check-classes').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
