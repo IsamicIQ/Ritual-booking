@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes - Ritual Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            background: #f5f4f0;
+            min-height: 100vh;
+        }
+        .page-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4a5d4a;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #3d4a3d;
+        }
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 1.75rem;
+            color: #3d4a3d;
+            margin-bottom: 0.5rem;
+        }
+        .page-header .date-display {
+            font-size: 1.1rem;
+            color: #6b766b;
+        }
+
+        /* Class Selection */
+        .class-selection {
+            margin-bottom: 2rem;
+        }
+        .class-selection h2 {
+            font-size: 1.2rem;
+            color: #3d4a3d;
+            margin-bottom: 1rem;
+        }
+        .class-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .class-card {
+            background: #fefdfb;
+            border: 2px solid #e5e3df;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .class-card:hover {
+            border-color: #4a5d4a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .class-card.selected {
+            border-color: #4f772d;
+            background: #ffe5ec;
+        }
+        .class-card h3 {
+            color: #3d4a3d;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .class-card .slot-count {
+            font-size: 0.9rem;
+            color: #6b766b;
+        }
+        .class-card.no-slots {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Time Slots */
+        .time-slots-section {
+            background: #fefdfb;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+            border: 1px solid rgba(229, 227, 223, 0.6);
+            display: none;
+        }
+        .time-slots-section.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .time-slots-section h2 {
+            font-size: 1.2rem;
+            color: #3d4a3d;
+            margin-bottom: 1rem;
+        }
+        .time-slots-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .time-slot-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            background: #f8f7f4;
+            border: 1px solid #e5e3df;
+            border-radius: 12px;
+            flex-wrap: wrap;
+            gap: 1rem;
+            transition: all 0.2s;
+        }
+        .time-slot-card:hover {
+            border-color: #4a5d4a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .slot-time {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #3d4a3d;
+            min-width: 140px;
+        }
+        .slot-instructor {
+            color: #6b766b;
+            font-size: 0.95rem;
+            flex: 1;
+        }
+        .slot-spots {
+            font-weight: 600;
+            color: #4a5d4a;
+            font-size: 0.95rem;
+        }
+        .slot-spots.full {
+            color: #a05c5c;
+        }
+        .slot-book-btn {
+            background: #4f772d;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .slot-book-btn:hover:not(:disabled) {
+            background: #3d5a23;
+            transform: scale(1.02);
+        }
+        .slot-book-btn:disabled {
+            background: #c5c9c5;
+            cursor: not-allowed;
+        }
+
+        .no-classes-message {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b766b;
+        }
+        .no-classes-message h2 {
+            color: #3d4a3d;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 50, 45, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: #fefdfb;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.75rem;
+            cursor: pointer;
+            color: #8a928a;
+        }
+        .modal-close:hover {
+            color: #3d4a3d;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #3d4a3d;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e3df;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4a5d4a;
+        }
+        .booking-success {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        .booking-success h3 {
+            color: #3d4a3d;
+            margin-bottom: 1rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .page-header h1 {
+                font-size: 1.4rem;
+            }
+            .class-cards {
+                grid-template-columns: 1fr;
+            }
+            .time-slot-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .slot-book-btn {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+            .modal {
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar" style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div class="container">
+            <div class="nav-content" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="logo">
+                    <a href="index.html"><img src="logo.svg" alt="Ritual Studio" class="logo-img" style="height: 45px;"></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <a href="index.html" class="back-link">&larr; Back to Calendar</a>
+
+        <div class="page-header">
+            <h1>Available Classes</h1>
+            <p class="date-display" id="dateDisplay">Loading...</p>
+        </div>
+
+        <!-- No Classes Message (hidden by default) -->
+        <div class="no-classes-message" id="noClassesMessage" style="display: none;">
+            <h2>No Classes Available</h2>
+            <p>There are no Hot Pilates, Hot Yoga, or Reformer classes scheduled for this day.</p>
+            <a href="index.html" class="btn-primary" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; text-decoration: none;">Back to Calendar</a>
+        </div>
+
+        <!-- Class Selection -->
+        <div class="class-selection" id="classSelection">
+            <h2>Select a Class</h2>
+            <div class="class-cards" id="classCards">
+                <!-- Class cards will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Time Slots -->
+        <div class="time-slots-section" id="timeSlotsSection">
+            <h2 id="timeSlotsTitle">Available Times</h2>
+            <div class="time-slots-list" id="timeSlotsList">
+                <!-- Time slots will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <h2>Book This Class</h2>
+            <p id="modalSlotInfo" style="color: #6b766b; margin-bottom: 1.5rem;"></p>
+            <form id="bookingForm">
+                <input type="hidden" id="slotClassId" name="class_id">
+                <input type="hidden" id="slotDate" name="date">
+                <input type="hidden" id="slotTime" name="time">
+                <input type="hidden" id="slotTimeSlotId" name="time_slot_id">
+                <div class="form-group">
+                    <label for="bookingName">Full Name *</label>
+                    <input type="text" id="bookingName" name="name" required placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label for="bookingEmail">Email *</label>
+                    <input type="email" id="bookingEmail" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="bookingPhone">Phone Number *</label>
+                    <input type="tel" id="bookingPhone" name="phone" required placeholder="0700 000 000">
+                </div>
+                <div class="form-group">
+                    <label for="bookingPackage">Package Type</label>
+                    <select id="bookingPackage" name="package">
+                        <option value="single">Single Class</option>
+                        <option value="intro">Intro Package</option>
+                        <option value="monthly">Monthly Package</option>
+                        <option value="pack_5">5-Pack</option>
+                        <option value="pack_10">10-Pack</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bookingNotes">Notes (optional)</label>
+                    <textarea id="bookingNotes" name="notes" rows="2" placeholder="Any special requests"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 0.75rem;">Confirm Booking</button>
+            </form>
+            <div class="booking-success" id="bookingSuccess" style="display: none;">
+                <h3>Booking Confirmed!</h3>
+                <p>Redirecting to payment...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script>
+        const ALLOWED_CLASSES = ['Hot Pilates', 'Hot Yoga', 'Reformer Pilates', 'Reformer'];
+
+        class DayClassesManager {
+            constructor() {
+                this.date = null;
+                this.slots = [];
+                this.selectedClass = null;
+                this.init();
+            }
+
+            async init() {
+                // Get date from URL
+                const params = new URLSearchParams(window.location.search);
+                const dateStr = params.get('date');
+
+                if (!dateStr) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                this.date = new Date(dateStr + 'T12:00:00');
+                this.displayDate();
+                await this.loadSlots();
+                this.renderClassCards();
+                this.setupEventListeners();
+            }
+
+            displayDate() {
+                const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                document.getElementById('dateDisplay').textContent = this.date.toLocaleDateString('en-GB', options);
+            }
+
+            isAllowedClass(name) {
+                if (!name) return false;
+                const n = name.toLowerCase();
+                return n.includes('hot pilates') || n.includes('hot yoga') || n.includes('reformer');
+            }
+
+            async loadSlots() {
+                try {
+                    if (!window.supabaseClient) {
+                        this.slots = this.getFallbackSlots();
+                        return;
+                    }
+                    const { data, error } = await window.supabaseClient
+                        .from('time_slots')
+                        .select('*, classes(id, name, max_capacity, description)')
+                        .eq('active', true);
+                    if (error) throw error;
+                    this.slots = (data || []).filter(s => this.isAllowedClass(s.classes?.name));
+                } catch (err) {
+                    console.error('Error loading slots:', err);
+                    this.slots = this.getFallbackSlots();
+                }
+            }
+
+            getFallbackSlots() {
+                return [
+                    { id: 'hp1', day_of_week: 1, start_time: '09:00', end_time: '10:00', instructor_name: 'Sarah', classes: { id: 'c1', name: 'Hot Pilates', max_capacity: 12 } },
+                    { id: 'hp2', day_of_week: 1, start_time: '17:30', end_time: '18:30', instructor_name: 'Sarah', classes: { id: 'c1', name: 'Hot Pilates', max_capacity: 12 } },
+                    { id: 'hy1', day_of_week: 1, start_time: '06:30', end_time: '07:30', instructor_name: 'Priya', classes: { id: 'c2', name: 'Hot Yoga', max_capacity: 15 } },
+                    { id: 'rf1', day_of_week: 1, start_time: '10:00', end_time: '11:00', instructor_name: 'Anna', classes: { id: 'c3', name: 'Reformer Pilates', max_capacity: 8 } },
+                    { id: 'hp3', day_of_week: 2, start_time: '09:00', end_time: '10:00', instructor_name: 'Sarah', classes: { id: 'c1', name: 'Hot Pilates', max_capacity: 12 } },
+                    { id: 'rf2', day_of_week: 2, start_time: '07:00', end_time: '08:00', instructor_name: 'Anna', classes: { id: 'c3', name: 'Reformer Pilates', max_capacity: 8 } },
+                    { id: 'hy2', day_of_week: 3, start_time: '18:00', end_time: '19:00', instructor_name: 'Priya', classes: { id: 'c2', name: 'Hot Yoga', max_capacity: 15 } },
+                    { id: 'rf3', day_of_week: 3, start_time: '16:00', end_time: '17:00', instructor_name: 'David', classes: { id: 'c3', name: 'Reformer Pilates', max_capacity: 8 } },
+                    { id: 'hp4', day_of_week: 4, start_time: '09:00', end_time: '10:00', instructor_name: 'Sarah', classes: { id: 'c1', name: 'Hot Pilates', max_capacity: 12 } },
+                    { id: 'hy3', day_of_week: 4, start_time: '18:00', end_time: '19:00', instructor_name: 'Priya', classes: { id: 'c2', name: 'Hot Yoga', max_capacity: 15 } },
+                    { id: 'rf4', day_of_week: 5, start_time: '10:00', end_time: '11:00', instructor_name: 'Anna', classes: { id: 'c3', name: 'Reformer Pilates', max_capacity: 8 } },
+                    { id: 'hy4', day_of_week: 5, start_time: '06:30', end_time: '07:30', instructor_name: 'Priya', classes: { id: 'c2', name: 'Hot Yoga', max_capacity: 15 } },
+                    { id: 'hp5', day_of_week: 6, start_time: '10:00', end_time: '11:00', instructor_name: 'Sarah', classes: { id: 'c1', name: 'Hot Pilates', max_capacity: 12 } },
+                    { id: 'hy5', day_of_week: 0, start_time: '09:00', end_time: '10:00', instructor_name: 'Priya', classes: { id: 'c2', name: 'Hot Yoga', max_capacity: 15 } },
+                ];
+            }
+
+            getSlotsForDate() {
+                const dow = this.date.getDay();
+                return this.slots.filter(s => s.day_of_week === dow);
+            }
+
+            getClassesForDate() {
+                const daySlots = this.getSlotsForDate();
+                const classMap = {};
+
+                daySlots.forEach(slot => {
+                    const className = slot.classes?.name;
+                    if (!className) return;
+
+                    if (!classMap[className]) {
+                        classMap[className] = {
+                            name: className,
+                            classId: slot.classes?.id || slot.class_id,
+                            slots: []
+                        };
+                    }
+                    classMap[className].slots.push(slot);
+                });
+
+                return Object.values(classMap);
+            }
+
+            renderClassCards() {
+                const classes = this.getClassesForDate();
+                const container = document.getElementById('classCards');
+                const selection = document.getElementById('classSelection');
+                const noClasses = document.getElementById('noClassesMessage');
+
+                if (classes.length === 0) {
+                    selection.style.display = 'none';
+                    noClasses.style.display = 'block';
+                    return;
+                }
+
+                container.innerHTML = classes.map(cls => `
+                    <div class="class-card" data-class-name="${cls.name}">
+                        <h3>${cls.name}</h3>
+                        <p class="slot-count">${cls.slots.length} time slot${cls.slots.length !== 1 ? 's' : ''} available</p>
+                    </div>
+                `).join('');
+            }
+
+            setupEventListeners() {
+                // Class card selection
+                document.getElementById('classCards').addEventListener('click', (e) => {
+                    const card = e.target.closest('.class-card');
+                    if (!card || card.classList.contains('no-slots')) return;
+
+                    // Update selection UI
+                    document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+
+                    this.selectedClass = card.dataset.className;
+                    this.renderTimeSlots();
+                });
+
+                // Modal close
+                document.getElementById('modalClose').addEventListener('click', () => this.closeModal());
+                document.getElementById('bookingModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'bookingModal') this.closeModal();
+                });
+
+                // Booking form
+                document.getElementById('bookingForm').addEventListener('submit', (e) => this.handleBooking(e));
+            }
+
+            async renderTimeSlots() {
+                const section = document.getElementById('timeSlotsSection');
+                const list = document.getElementById('timeSlotsList');
+                const title = document.getElementById('timeSlotsTitle');
+
+                if (!this.selectedClass) {
+                    section.classList.remove('visible');
+                    return;
+                }
+
+                const daySlots = this.getSlotsForDate();
+                const classSlots = daySlots
+                    .filter(s => s.classes?.name === this.selectedClass)
+                    .sort((a, b) => a.start_time.localeCompare(b.start_time));
+
+                title.textContent = `${this.selectedClass} - Available Times`;
+
+                const dateStr = this.date.toISOString().split('T')[0];
+
+                // Get spots for each slot
+                const slotsWithSpots = await Promise.all(classSlots.map(async (slot) => {
+                    const capacity = slot.classes?.max_capacity || 12;
+                    let spotsRemaining = capacity;
+
+                    if (window.supabaseClient && slot.id) {
+                        try {
+                            const { count } = await window.supabaseClient
+                                .from('bookings')
+                                .select('*', { count: 'exact', head: true })
+                                .eq('time_slot_id', slot.id)
+                                .eq('booking_date', dateStr)
+                                .neq('status', 'cancelled');
+                            if (count !== null) spotsRemaining = Math.max(0, capacity - count);
+                        } catch (e) {}
+                    }
+
+                    return { ...slot, spotsRemaining, capacity };
+                }));
+
+                list.innerHTML = slotsWithSpots.map(slot => {
+                    const isFull = slot.spotsRemaining <= 0;
+                    return `
+                        <div class="time-slot-card" data-slot='${JSON.stringify({
+                            slotId: slot.id,
+                            classId: slot.classes?.id || slot.class_id,
+                            className: slot.classes?.name,
+                            date: dateStr,
+                            time: slot.start_time
+                        })}'>
+                            <div class="slot-time">${this.formatTime(slot.start_time)} - ${this.formatTime(slot.end_time)}</div>
+                            <div class="slot-instructor">with ${slot.instructor_name || 'Instructor'}</div>
+                            <div class="slot-spots ${isFull ? 'full' : ''}">${isFull ? 'Full' : slot.spotsRemaining + ' spots left'}</div>
+                            <button class="slot-book-btn" ${isFull ? 'disabled' : ''}>Book Now</button>
+                        </div>
+                    `;
+                }).join('');
+
+                // Add click handlers to book buttons
+                list.querySelectorAll('.slot-book-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const card = e.target.closest('.time-slot-card');
+                        const slotData = JSON.parse(card.dataset.slot);
+                        this.openModal(slotData);
+                    });
+                });
+
+                section.classList.add('visible');
+            }
+
+            formatTime(t) {
+                if (!t) return '';
+                const [h, m] = String(t).split(':');
+                const hour = parseInt(h);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const h12 = hour % 12 || 12;
+                return `${h12}:${m || '00'} ${ampm}`;
+            }
+
+            openModal(data) {
+                document.getElementById('slotClassId').value = data.classId || '';
+                document.getElementById('slotDate').value = data.date || '';
+                document.getElementById('slotTime').value = data.time || '';
+                document.getElementById('slotTimeSlotId').value = data.slotId || '';
+
+                const dateObj = new Date(data.date + 'T12:00:00');
+                const dateStr = dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                document.getElementById('modalSlotInfo').textContent = `${data.className} - ${dateStr} at ${this.formatTime(data.time)}`;
+
+                document.getElementById('bookingForm').style.display = '';
+                document.getElementById('bookingSuccess').style.display = 'none';
+                document.getElementById('bookingModal').classList.add('active');
+            }
+
+            closeModal() {
+                document.getElementById('bookingModal').classList.remove('active');
+                document.getElementById('bookingForm').reset();
+            }
+
+            async handleBooking(e) {
+                e.preventDefault();
+                const form = document.getElementById('bookingForm');
+                const fd = new FormData(form);
+                const btn = form.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
+                const bookingData = {
+                    customer_name: fd.get('name'),
+                    customer_email: fd.get('email'),
+                    customer_phone: fd.get('phone'),
+                    class_id: fd.get('class_id'),
+                    time_slot_id: fd.get('time_slot_id') || null,
+                    booking_date: fd.get('date'),
+                    booking_time: fd.get('time'),
+                    package_type: fd.get('package') || 'single',
+                    special_requests: fd.get('notes') || null,
+                    status: 'confirmed',
+                    payment_status: 'pending'
+                };
+
+                try {
+                    if (!window.supabaseClient) throw new Error('Database not configured');
+
+                    const { data, error } = await window.supabaseClient
+                        .from('bookings')
+                        .insert([bookingData])
+                        .select()
+                        .single();
+                    if (error) throw error;
+
+                    form.style.display = 'none';
+                    document.getElementById('bookingSuccess').style.display = 'block';
+
+                    setTimeout(() => {
+                        this.closeModal();
+                        this.renderTimeSlots(); // Refresh spots
+                        window.location.href = `payment.html?booking_id=${data.id}`;
+                    }, 1500);
+                } catch (err) {
+                    console.error('Booking error:', err);
+                    alert('Error saving booking. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = 'Confirm Booking';
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            new DayClassesManager();
+        });
+    </script>
+</body>
+</html>

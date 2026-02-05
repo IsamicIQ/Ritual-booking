@@ -165,21 +165,19 @@ class CalendarManager {
         html += '</div>';
         container.innerHTML = html;
 
-        // Make entire day cell clickable (for mobile and accessibility)
+        // Redirect to day-classes page when clicking a day
+        const handleDayClick = (dateStr) => {
+            const date = new Date(dateStr + 'T12:00:00');
+            if (date < today) return;
+            // Redirect to day classes page
+            window.location.href = `day-classes.html?date=${dateStr}`;
+        };
+
+        // Make entire day cell clickable
         container.querySelectorAll('.cal-day[data-date]').forEach(el => {
             el.addEventListener('click', (e) => {
                 if (e.target.classList.contains('btn-check-classes')) return;
-                const dateStr = el.dataset.date;
-                const hasClasses = el.dataset.hasClasses === 'true';
-                const date = new Date(dateStr + 'T12:00:00');
-                if (date < today) return;
-                this.selectedDate = date;
-                this.renderCalendar();
-                if (hasClasses) {
-                    this.loadAndShowDayDetail(date);
-                } else {
-                    this.renderDayDetail(null, date);
-                }
+                handleDayClick(el.dataset.date);
             });
         });
 
@@ -187,17 +185,7 @@ class CalendarManager {
         container.querySelectorAll('.btn-check-classes').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const dateStr = btn.dataset.date;
-                const hasClasses = btn.dataset.hasClasses === 'true';
-                const date = new Date(dateStr + 'T12:00:00');
-                if (date < today) return;
-                this.selectedDate = date;
-                this.renderCalendar();
-                if (hasClasses) {
-                    this.loadAndShowDayDetail(date);
-                } else {
-                    this.renderDayDetail(null, date);
-                }
+                handleDayClick(btn.dataset.date);
             });
         });
     }
