@@ -109,13 +109,24 @@ class CalendarManager {
 
     getSlotsForDate(date) {
         const dow = this.getDayOfWeek(date);
+        // No classes on Sundays
+        if (dow === 0) return [];
         return this.slots
             .filter(s => s.day_of_week === dow)
             .sort((a, b) => String(a.start_time).localeCompare(String(b.start_time)));
     }
 
     hasClassesOnDate(date) {
+        // No classes on Sundays
+        if (date.getDay() === 0) return false;
         return this.getSlotsForDate(date).length > 0;
+    }
+
+    isToday(date) {
+        const today = new Date();
+        return date.getFullYear() === today.getFullYear() &&
+               date.getMonth() === today.getMonth() &&
+               date.getDate() === today.getDate();
     }
 
     renderCalendar() {
@@ -146,20 +157,25 @@ class CalendarManager {
         for (let d = 1; d <= daysInMonth; d++) {
             const date = new Date(year, month, d);
             const dateStr = date.toISOString().split('T')[0];
+            const isSunday = date.getDay() === 0;
             const hasClasses = this.hasClassesOnDate(date);
             const isPast = date < today;
+            const isTodayDate = this.isToday(date);
+            // Block past dates, Sundays, and same-day bookings
+            const isBlocked = isPast || isSunday || isTodayDate;
             const isSelected = this.selectedDate && this.selectedDate.toDateString() === date.toDateString();
             let cls = 'cal-day';
-            if (isPast) cls += ' cal-day-past';
-            if (hasClasses) cls += ' cal-day-has-classes';
+            if (isBlocked) cls += ' cal-day-past';
+            if (hasClasses && !isSunday) cls += ' cal-day-has-classes';
             if (isSelected) cls += ' cal-day-selected';
 
-            const buttonDisabled = isPast ? 'disabled' : '';
-            const buttonClass = isPast ? 'btn-check-classes btn-check-disabled' : 'btn-check-classes';
+            const buttonDisabled = isBlocked ? 'disabled' : '';
+            const buttonClass = isBlocked ? 'btn-check-classes btn-check-disabled' : 'btn-check-classes';
+            const buttonText = isSunday ? 'Closed' : (isTodayDate ? 'Book in advance' : 'Check available classes');
 
             html += `<div class="${cls}" data-date="${dateStr}" data-has-classes="${hasClasses}">
                 <span class="cal-day-number">${d}</span>
-                <button class="${buttonClass}" ${buttonDisabled} data-date="${dateStr}" data-has-classes="${hasClasses}">Check available classes</button>
+                <button class="${buttonClass}" ${buttonDisabled} data-date="${dateStr}" data-has-classes="${hasClasses}">${buttonText}</button>
             </div>`;
         }
         html += '</div>';
@@ -168,7 +184,10 @@ class CalendarManager {
         // Redirect to day-classes page when clicking a day
         const handleDayClick = (dateStr) => {
             const date = new Date(dateStr + 'T12:00:00');
+            // Block past dates, Sundays, and same-day bookings
             if (date < today) return;
+            if (date.getDay() === 0) return; // Sunday
+            if (this.isToday(date)) return; // Same-day booking not allowed
             // Redirect to day classes page
             window.location.href = `day-classes.html?date=${dateStr}`;
         };

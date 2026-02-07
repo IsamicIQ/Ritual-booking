@@ -1,10 +1,7 @@
-// Payment page — M-Pesa STK Push & Stripe integration
+// Payment page — M-Pesa STK Push integration
 
 // Configuration — replace with your actual keys
 const PAYMENT_CONFIG = {
-    stripe: {
-        publishableKey: 'YOUR_STRIPE_PUBLISHABLE_KEY'
-    },
     mpesa: {
         // M-Pesa STK push goes through a Supabase Edge Function for security
         edgeFunctionUrl: '' // e.g. https://your-project.supabase.co/functions/v1/mpesa-stk-push
@@ -15,9 +12,6 @@ class PaymentManager {
     constructor() {
         this.booking = null;
         this.bookingId = null;
-        this.stripe = null;
-        this.cardElement = null;
-        this.activeMethod = 'mpesa';
         this.init();
     }
 
@@ -29,7 +23,6 @@ class PaymentManager {
         }
         await this.loadBooking();
         this.setupEventListeners();
-        this.initStripe();
     }
 
     async loadBooking() {
@@ -84,56 +77,14 @@ class PaymentManager {
     }
 
     setupEventListeners() {
-        // Payment tabs
-        document.querySelectorAll('.payment-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.payment-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                this.activeMethod = tab.dataset.method;
-                document.getElementById('mpesaForm').style.display = this.activeMethod === 'mpesa' ? '' : 'none';
-                document.getElementById('stripeForm').style.display = this.activeMethod === 'stripe' ? '' : 'none';
-            });
-        });
-
         // M-Pesa pay
         document.getElementById('mpesaPay').addEventListener('click', () => this.payMpesa());
-
-        // Stripe pay
-        document.getElementById('stripePay').addEventListener('click', () => this.payStripe());
 
         // Retry
         document.getElementById('retryPayment').addEventListener('click', () => {
             document.getElementById('paymentFailure').style.display = 'none';
-            document.getElementById('mpesaForm').style.display = this.activeMethod === 'mpesa' ? '' : 'none';
-            document.getElementById('stripeForm').style.display = this.activeMethod === 'stripe' ? '' : 'none';
+            document.getElementById('mpesaForm').style.display = '';
         });
-    }
-
-    initStripe() {
-        if (PAYMENT_CONFIG.stripe.publishableKey === 'YOUR_STRIPE_PUBLISHABLE_KEY') {
-            console.warn('Stripe not configured — using placeholder');
-            return;
-        }
-        try {
-            this.stripe = Stripe(PAYMENT_CONFIG.stripe.publishableKey);
-            const elements = this.stripe.elements();
-            this.cardElement = elements.create('card', {
-                style: {
-                    base: {
-                        fontSize: '16px',
-                        color: '#2d3e2d',
-                        fontFamily: 'Inter, sans-serif',
-                        '::placeholder': { color: '#6a7a6a' }
-                    }
-                }
-            });
-            this.cardElement.mount('#stripeCardElement');
-            this.cardElement.on('change', (event) => {
-                document.getElementById('stripeError').textContent = event.error ? event.error.message : '';
-            });
-        } catch (err) {
-            console.error('Stripe init error:', err);
-        }
     }
 
     async payMpesa() {
@@ -205,34 +156,6 @@ class PaymentManager {
         setTimeout(poll, 5000);
     }
 
-    async payStripe() {
-        if (!this.stripe || !this.cardElement) {
-            // Demo mode
-            console.warn('Stripe not configured — simulating payment');
-            this.showProcessing();
-            setTimeout(() => this.onPaymentSuccess('STRIPE_DEMO_' + Date.now()), 2000);
-            return;
-        }
-
-        this.showProcessing();
-
-        try {
-            // In production, create a PaymentIntent on the server and confirm here
-            // For now, use token-based flow as example
-            const { token, error } = await this.stripe.createToken(this.cardElement);
-            if (error) {
-                this.onPaymentFailure(error.message);
-                return;
-            }
-
-            // Send token to your backend / Supabase Edge Function to charge
-            // For demo purposes, treat as success
-            this.onPaymentSuccess('STRIPE_' + token.id);
-        } catch (err) {
-            this.onPaymentFailure(err.message || 'Payment processing error');
-        }
-    }
-
     async onPaymentSuccess(reference) {
         try {
             await window.supabaseClient
@@ -245,7 +168,6 @@ class PaymentManager {
 
         document.getElementById('paymentProcessing').style.display = 'none';
         document.getElementById('mpesaForm').style.display = 'none';
-        document.getElementById('stripeForm').style.display = 'none';
         document.getElementById('paymentSuccess').style.display = 'block';
 
         // Update My Bookings link with email
@@ -263,7 +185,6 @@ class PaymentManager {
 
     showProcessing() {
         document.getElementById('mpesaForm').style.display = 'none';
-        document.getElementById('stripeForm').style.display = 'none';
         document.getElementById('paymentFailure').style.display = 'none';
         document.getElementById('paymentProcessing').style.display = 'flex';
     }

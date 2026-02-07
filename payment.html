@@ -9,7 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -53,12 +52,7 @@
 
                 <!-- Payment Methods -->
                 <div class="payment-methods" id="paymentMethods" style="display:none;">
-                    <h3>Choose Payment Method</h3>
-
-                    <div class="payment-tabs">
-                        <button class="payment-tab active" data-method="mpesa">M-Pesa</button>
-                        <button class="payment-tab" data-method="stripe">Card (Stripe)</button>
-                    </div>
+                    <h3>Pay with M-Pesa</h3>
 
                     <!-- M-Pesa -->
                     <div class="payment-form" id="mpesaForm">
@@ -69,14 +63,6 @@
                             <small style="color:var(--text-light);">Format: 254XXXXXXXXX</small>
                         </div>
                         <button class="btn-primary btn-large" style="width:100%" id="mpesaPay">Pay with M-Pesa</button>
-                    </div>
-
-                    <!-- Stripe -->
-                    <div class="payment-form" id="stripeForm" style="display:none;">
-                        <p class="payment-desc">Pay securely with your credit or debit card.</p>
-                        <div id="stripeCardElement" class="stripe-element"></div>
-                        <div id="stripeError" class="stripe-error"></div>
-                        <button class="btn-primary btn-large" style="width:100%;margin-top:1rem;" id="stripePay">Pay with Card</button>
                     </div>
 
                     <!-- Processing / Success / Failure -->

@@ -392,10 +392,38 @@
                 }
 
                 this.date = new Date(dateStr + 'T12:00:00');
+
+                // Block Sundays
+                if (this.date.getDay() === 0) {
+                    this.showNoClassesMessage('No classes on Sundays. The studio is closed.');
+                    return;
+                }
+
+                // Block same-day bookings
+                if (this.isToday(this.date)) {
+                    this.showNoClassesMessage('Same-day bookings are not available. Please book at least one day in advance.');
+                    return;
+                }
+
                 this.displayDate();
                 await this.loadSlots();
                 this.renderClassCards();
                 this.setupEventListeners();
+            }
+
+            isToday(date) {
+                const today = new Date();
+                return date.getFullYear() === today.getFullYear() &&
+                       date.getMonth() === today.getMonth() &&
+                       date.getDate() === today.getDate();
+            }
+
+            showNoClassesMessage(message) {
+                document.getElementById('classSelection').style.display = 'none';
+                const noClasses = document.getElementById('noClassesMessage');
+                noClasses.style.display = 'block';
+                noClasses.querySelector('p').textContent = message;
+                document.getElementById('dateDisplay').textContent = this.date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             }
 
             displayDate() {
@@ -442,12 +470,13 @@
                     { id: 'rf4', day_of_week: 5, start_time: '10:00', end_time: '11:00', instructor_name: 'Anna', classes: { id: 'c3', name: 'Reformer Pilates', max_capacity: 8 } },
                     { id: 'hy4', day_of_week: 5, start_time: '06:30', end_time: '07:30', instructor_name: 'Priya', classes: { id: 'c2', name: 'Hot Yoga', max_capacity: 15 } },
                     { id: 'hp5', day_of_week: 6, start_time: '10:00', end_time: '11:00', instructor_name: 'Sarah', classes: { id: 'c1', name: 'Hot Pilates', max_capacity: 12 } },
-                    { id: 'hy5', day_of_week: 0, start_time: '09:00', end_time: '10:00', instructor_name: 'Priya', classes: { id: 'c2', name: 'Hot Yoga', max_capacity: 15 } },
                 ];
             }
 
             getSlotsForDate() {
                 const dow = this.date.getDay();
+                // No classes on Sundays
+                if (dow === 0) return [];
                 return this.slots.filter(s => s.day_of_week === dow);
             }
 

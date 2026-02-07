@@ -103,7 +103,24 @@ class ScheduleManager {
         if (this.filter !== 'all') {
             filtered = filtered.filter(s => s.class_id === this.filter);
         }
+        // Filter out Sunday slots (day_of_week === 0)
+        filtered = filtered.filter(s => s.day_of_week !== 0);
         return filtered;
+    }
+
+    isToday(date) {
+        const today = new Date();
+        return date.getFullYear() === today.getFullYear() &&
+               date.getMonth() === today.getMonth() &&
+               date.getDate() === today.getDate();
+    }
+
+    isSameDayOrPast(date) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+        return checkDate <= today;
     }
 
     async getSpotsRemaining(slotId, date) {
@@ -124,8 +141,9 @@ class ScheduleManager {
 
     render() {
         const filtered = this.getFilteredSlots();
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const dayNums = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0
+        // Exclude Sunday from the days displayed
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayNums = [1, 2, 3, 4, 5, 6]; // Mon=1 ... Sat=6 (no Sunday)
 
         // Week label
         const weekEnd = new Date(this.currentWeekStart);
@@ -147,6 +165,7 @@ class ScheduleManager {
             const dow = dayNums[i];
             const date = this.getDateForDayOfWeek(dow);
             const dateStr = date.toISOString().split('T')[0];
+            const isBlocked = this.isSameDayOrPast(date);
             const daySlots = filtered
                 .filter(s => s.day_of_week === dow)
                 .sort((a, b) => a.start_time.localeCompare(b.start_time));
@@ -154,6 +173,8 @@ class ScheduleManager {
             html += '<div class="calendar-day-col">';
             if (daySlots.length === 0) {
                 html += '<div class="no-slots">No classes</div>';
+            } else if (isBlocked) {
+                html += '<div class="no-slots">Booking closed</div>';
             } else {
                 daySlots.forEach(slot => {
                     const className = slot.classes?.name || 'Class';
@@ -180,11 +201,12 @@ class ScheduleManager {
             const date = this.getDateForDayOfWeek(dow);
             const dateStr = date.toISOString().split('T')[0];
             const dateFmt = date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+            const isBlocked = this.isSameDayOrPast(date);
             const daySlots = filtered
                 .filter(s => s.day_of_week === dow)
                 .sort((a, b) => a.start_time.localeCompare(b.start_time));
 
-            if (daySlots.length > 0) {
+            if (daySlots.length > 0 && !isBlocked) {
                 mobileHtml += `<div class="day-section"><h3 class="day-title">${dateFmt}</h3>`;
                 daySlots.forEach(slot => {
                     const className = slot.classes?.name || 'Class';
