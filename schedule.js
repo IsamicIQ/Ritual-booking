@@ -304,13 +304,20 @@ class ScheduleManager {
 
             if (error) throw error;
 
+            const bookingWithClass = {
+                ...bookingData,
+                id: data.id,
+                class_name: document.getElementById('modalSlotInfo').textContent.split(' — ')[0]
+            };
+
             // Send confirmation email
             if (window.EmailService) {
-                await window.EmailService.sendBookingConfirmation({
-                    ...bookingData,
-                    id: data.id,
-                    class_name: document.getElementById('modalSlotInfo').textContent.split(' — ')[0]
-                });
+                await window.EmailService.sendBookingConfirmation(bookingWithClass);
+            }
+
+            // Send SMS notification to studio
+            if (window.SMSService) {
+                await window.SMSService.sendBookingNotification(bookingWithClass);
             }
 
             form.style.display = 'none';

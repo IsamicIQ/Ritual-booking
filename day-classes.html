@@ -370,6 +370,7 @@
     </div>
 
     <script src="supabase-config.js"></script>
+    <script src="sms-service.js"></script>
     <script>
         const ALLOWED_CLASSES = ['Hot Pilates', 'Hot Yoga', 'Reformer Pilates', 'Reformer'];
 
@@ -674,6 +675,15 @@
                         .select()
                         .single();
                     if (error) throw error;
+
+                    // Send SMS notification to studio
+                    if (window.SMSService) {
+                        await window.SMSService.sendBookingNotification({
+                            ...bookingData,
+                            id: data.id,
+                            class_name: this.selectedClass
+                        });
+                    }
 
                     form.style.display = 'none';
                     document.getElementById('bookingSuccess').style.display = 'block';
