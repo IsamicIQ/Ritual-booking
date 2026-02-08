@@ -113,6 +113,12 @@ class CalendarManager {
         if (dow === 0) return [];
         return this.slots
             .filter(s => s.day_of_week === dow)
+            // Reformer classes don't happen after 2 PM
+            .filter(s => {
+                const name = (s.classes?.name || '').toLowerCase();
+                if (name.includes('reformer') && s.start_time >= '14:00') return false;
+                return true;
+            })
             .sort((a, b) => String(a.start_time).localeCompare(String(b.start_time)));
     }
 
@@ -161,8 +167,8 @@ class CalendarManager {
             const hasClasses = this.hasClassesOnDate(date);
             const isPast = date < today;
             const isTodayDate = this.isToday(date);
-            // Block past dates, Sundays, and same-day bookings
-            const isBlocked = isPast || isSunday || isTodayDate;
+            // Block past dates and Sundays
+            const isBlocked = isPast || isSunday;
             const isSelected = this.selectedDate && this.selectedDate.toDateString() === date.toDateString();
             let cls = 'cal-day';
             if (isBlocked) cls += ' cal-day-past';
@@ -171,7 +177,7 @@ class CalendarManager {
 
             const buttonDisabled = isBlocked ? 'disabled' : '';
             const buttonClass = isBlocked ? 'btn-check-classes btn-check-disabled' : 'btn-check-classes';
-            const buttonText = isSunday ? 'Closed' : (isTodayDate ? 'Book in advance' : 'Check available classes');
+            const buttonText = isSunday ? 'Closed' : 'Check available classes';
 
             html += `<div class="${cls}" data-date="${dateStr}" data-has-classes="${hasClasses}">
                 <span class="cal-day-number">${d}</span>
@@ -184,10 +190,9 @@ class CalendarManager {
         // Redirect to day-classes page when clicking a day
         const handleDayClick = (dateStr) => {
             const date = new Date(dateStr + 'T12:00:00');
-            // Block past dates, Sundays, and same-day bookings
+            // Block past dates and Sundays
             if (date < today) return;
             if (date.getDay() === 0) return; // Sunday
-            if (this.isToday(date)) return; // Same-day booking not allowed
             // Redirect to day classes page
             window.location.href = `day-classes.html?date=${dateStr}`;
         };

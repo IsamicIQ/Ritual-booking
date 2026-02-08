@@ -400,12 +400,6 @@
                     return;
                 }
 
-                // Block same-day bookings
-                if (this.isToday(this.date)) {
-                    this.showNoClassesMessage('Same-day bookings are not available. Please book at least one day in advance.');
-                    return;
-                }
-
                 this.displayDate();
                 await this.loadSlots();
                 this.renderClassCards();
@@ -478,7 +472,14 @@
                 const dow = this.date.getDay();
                 // No classes on Sundays
                 if (dow === 0) return [];
-                return this.slots.filter(s => s.day_of_week === dow);
+                return this.slots
+                    .filter(s => s.day_of_week === dow)
+                    // Reformer classes don't happen after 2 PM
+                    .filter(s => {
+                        const name = (s.classes?.name || '').toLowerCase();
+                        if (name.includes('reformer') && s.start_time >= '14:00') return false;
+                        return true;
+                    });
             }
 
             getClassesForDate() {

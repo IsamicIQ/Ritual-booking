@@ -82,6 +82,7 @@ class MyBookingsManager {
 
     renderList(containerId, bookings, showCancel) {
         const container = document.getElementById(containerId);
+        const today = new Date().toISOString().split('T')[0];
         container.innerHTML = bookings.map(b => {
             const className = b.classes?.name || 'Class';
             const date = new Date(b.booking_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
@@ -90,6 +91,8 @@ class MyBookingsManager {
             const paymentBadge = b.payment_status === 'paid'
                 ? '<span class="badge badge-paid">Paid</span>'
                 : '<span class="badge badge-pending">Payment Pending</span>';
+            const isSameDay = b.booking_date === today;
+            const canCancel = showCancel && !isSameDay;
 
             return `
                 <div class="booking-card">
@@ -104,7 +107,8 @@ class MyBookingsManager {
                         <div class="booking-detail"><strong>Price:</strong> KES ${(b.price_paid || 0).toLocaleString()}</div>
                         <div class="booking-detail">${paymentBadge}</div>
                     </div>
-                    ${showCancel ? `<div class="booking-card-footer"><button class="btn-outline btn-cancel" data-id="${b.id}" data-class="${className}" data-date="${date}">Cancel Booking</button></div>` : ''}
+                    ${canCancel ? `<div class="booking-card-footer"><button class="btn-outline btn-cancel" data-id="${b.id}" data-class="${className}" data-date="${date}">Cancel Booking</button></div>` : ''}
+                    ${showCancel && isSameDay ? `<div class="booking-card-footer"><span style="color:#6b766b;font-size:0.9rem;">Same-day cancellations are not allowed</span></div>` : ''}
                 </div>`;
         }).join('');
 

@@ -105,6 +105,12 @@ class ScheduleManager {
         }
         // Filter out Sunday slots (day_of_week === 0)
         filtered = filtered.filter(s => s.day_of_week !== 0);
+        // Reformer classes don't happen after 2 PM
+        filtered = filtered.filter(s => {
+            const name = (s.classes?.name || '').toLowerCase();
+            if (name.includes('reformer') && s.start_time >= '14:00') return false;
+            return true;
+        });
         return filtered;
     }
 
@@ -120,7 +126,7 @@ class ScheduleManager {
         today.setHours(0, 0, 0, 0);
         const checkDate = new Date(date);
         checkDate.setHours(0, 0, 0, 0);
-        return checkDate <= today;
+        return checkDate < today;
     }
 
     async getSpotsRemaining(slotId, date) {
