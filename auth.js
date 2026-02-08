@@ -90,10 +90,16 @@ class AuthManager {
             // Close modals if open
             if (loginModal) loginModal.classList.remove('active');
             if (signupModal) signupModal.classList.remove('active');
+
+            // Notify listeners that user signed in
+            window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: this.currentUser } }));
         } else {
             // User is not logged in
             if (authSection) authSection.style.display = 'flex';
             if (userSection) userSection.style.display = 'none';
+
+            // Notify listeners that user signed out
+            window.dispatchEvent(new CustomEvent('authChanged', { detail: { user: null } }));
         }
     }
 

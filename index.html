@@ -445,6 +445,101 @@
             padding: 1rem 0;
         }
 
+        /* ========== DUE CLASSES ========== */
+        .due-classes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .due-classes-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #3d4a3d;
+        }
+        .due-classes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .due-class-card {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.25rem 1.5rem;
+            background: #fefdfb;
+            border: 1px solid #e5e3df;
+            border-radius: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .due-class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .due-class-card.due-today {
+            border-left: 4px solid #4f772d;
+            background: #f6faf2;
+        }
+        .due-class-date {
+            text-align: center;
+            min-width: 56px;
+        }
+        .due-class-date .due-day {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3d4a3d;
+            line-height: 1.1;
+        }
+        .due-class-date .due-month {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b766b;
+            text-transform: uppercase;
+        }
+        .due-class-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .due-class-name {
+            font-weight: 600;
+            color: #3d4a3d;
+            font-size: 1.05rem;
+        }
+        .due-class-time {
+            color: #5c665c;
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+        .due-class-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .due-class-badge.badge-today {
+            background: #e8f5e0;
+            color: #3d6b1e;
+        }
+        .due-class-badge.badge-upcoming {
+            background: #eef2ee;
+            color: #4a5d4a;
+        }
+        .due-classes-empty {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: #fefdfb;
+            border-radius: 12px;
+            border: 1px dashed #e5e3df;
+        }
+        .due-classes-empty p:first-child {
+            color: #3d4a3d;
+            font-weight: 500;
+            font-size: 1.05rem;
+        }
+
         /* ========== MOBILE RESPONSIVE STYLES ========== */
 
         @media (max-width: 768px) {
@@ -533,6 +628,20 @@
                 margin-top: 0.25rem;
             }
 
+            /* Due classes mobile */
+            .due-classes-title {
+                font-size: 1.25rem;
+            }
+            .due-class-card {
+                flex-wrap: wrap;
+                padding: 1rem;
+                gap: 0.75rem;
+            }
+            .due-class-badge {
+                width: 100%;
+                text-align: center;
+            }
+
             /* Navbar adjustments */
             .nav-content {
                 flex-wrap: wrap;
@@ -604,6 +713,19 @@
             </div>
         </div>
     </nav>
+
+    <!-- Due Classes Section (visible only when signed in) -->
+    <div id="dueClassesSection" class="booking-container" style="display: none; padding-bottom: 0;">
+        <div class="due-classes-header">
+            <h2 class="due-classes-title">Your Upcoming Classes</h2>
+        </div>
+        <div id="dueClassesLoading" style="text-align: center; padding: 1rem; color: #6b766b;">Loading your classes...</div>
+        <div id="dueClassesList" class="due-classes-list"></div>
+        <div id="dueClassesEmpty" class="due-classes-empty" style="display: none;">
+            <p>You have no upcoming classes booked.</p>
+            <p style="font-size: 0.9rem; color: #6b766b;">Browse the calendar below to book your next class.</p>
+        </div>
+    </div>
 
     <!-- Calendar Booking -->
     <div class="booking-container">
@@ -741,8 +863,92 @@
     <!-- Calendar Booking -->
     <script src="calendar.js"></script>
     <script>
+        // Due Classes loader
+        async function loadDueClasses(userEmail) {
+            const section = document.getElementById('dueClassesSection');
+            const loading = document.getElementById('dueClassesLoading');
+            const list = document.getElementById('dueClassesList');
+            const empty = document.getElementById('dueClassesEmpty');
+
+            if (!userEmail || !window.supabaseClient) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = '';
+            loading.style.display = '';
+            list.innerHTML = '';
+            empty.style.display = 'none';
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const { data, error } = await window.supabaseClient
+                    .from('bookings')
+                    .select('*, classes(name)')
+                    .eq('customer_email', userEmail)
+                    .eq('status', 'confirmed')
+                    .gte('booking_date', today)
+                    .order('booking_date', { ascending: true })
+                    .order('booking_time', { ascending: true });
+
+                loading.style.display = 'none';
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    empty.style.display = '';
+                    return;
+                }
+
+                list.innerHTML = data.map(b => {
+                    const bookingDate = new Date(b.booking_date + 'T12:00:00');
+                    const day = bookingDate.getDate();
+                    const month = bookingDate.toLocaleDateString('en-GB', { month: 'short' });
+                    const weekday = bookingDate.toLocaleDateString('en-GB', { weekday: 'long' });
+                    const className = b.classes?.name || 'Class';
+                    const isToday = b.booking_date === today;
+                    const time = formatDueTime(b.booking_time);
+
+                    return `
+                        <div class="due-class-card ${isToday ? 'due-today' : ''}">
+                            <div class="due-class-date">
+                                <span class="due-day">${day}</span>
+                                <span class="due-month">${month}</span>
+                            </div>
+                            <div class="due-class-info">
+                                <div class="due-class-name">${className}</div>
+                                <div class="due-class-time">${weekday} at ${time}</div>
+                            </div>
+                            <span class="due-class-badge ${isToday ? 'badge-today' : 'badge-upcoming'}">${isToday ? 'Today' : weekday}</span>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                console.error('Error loading due classes:', err);
+                loading.style.display = 'none';
+                empty.style.display = '';
+            }
+        }
+
+        function formatDueTime(timeStr) {
+            if (!timeStr) return '';
+            const [h, m] = timeStr.split(':');
+            const hour = parseInt(h);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            return `${hour % 12 || 12}:${m} ${ampm}`;
+        }
+
         // Auth UI handlers
         document.addEventListener('DOMContentLoaded', function() {
+            // Load due classes when auth state changes
+            window.addEventListener('authChanged', (e) => {
+                const user = e.detail?.user;
+                if (user) {
+                    loadDueClasses(user.email);
+                } else {
+                    document.getElementById('dueClassesSection').style.display = 'none';
+                }
+            });
+
             // Login/Signup buttons
             document.getElementById('loginBtn')?.addEventListener('click', () => {
                 document.getElementById('loginModal').classList.add('active');
