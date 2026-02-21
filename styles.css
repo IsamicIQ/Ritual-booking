@@ -16,8 +16,8 @@
     --text-light: #6b766b;
     --white: #fefdfb;
     --border-color: #e5e3df;
-    --bg-light: #f9bec7;
-    --bg-section: #f5d4d9;
+    --bg-light: #fae0e4;
+    --bg-section: #fcd5df;
     --shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
     --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
@@ -65,7 +65,7 @@ h1, h2, h3, h4, h5, h6,
 
 .logo h1 {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--primary-color);
     letter-spacing: -0.3px;
 }
@@ -119,7 +119,7 @@ h1, h2, h3, h4, h5, h6,
     border: 2px solid var(--primary-color);
     padding: 0.75rem 1.5rem;
     border-radius: 6px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 1rem;
@@ -235,7 +235,7 @@ h1, h2, h3, h4, h5, h6,
 .about-image-placeholder {
     width: 100%;
     height: 250px;
-    background: linear-gradient(135deg, #f9bec7 0%, #f5d4d9 100%);
+    background: linear-gradient(135deg, #fae0e4 0%, #fcd5df 100%);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -394,7 +394,7 @@ section {
 
 .pricing-item .price {
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     margin-left: 1rem;
 }
 
@@ -777,7 +777,7 @@ section {
 }
 
 .week-label {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1rem;
     min-width: 180px;
     text-align: center;
@@ -839,7 +839,7 @@ section {
 }
 
 .slot-class {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.85rem;
     color: var(--primary-color);
     margin-bottom: 2px;
@@ -960,14 +960,14 @@ section {
 }
 
 .booking-class {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1.1rem;
     color: var(--primary-color);
 }
 
 .booking-status {
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 0.25rem 0.75rem;
@@ -992,7 +992,7 @@ section {
 
 .badge {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
 }
