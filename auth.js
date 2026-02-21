@@ -50,10 +50,9 @@ class AuthManager {
         try {
             if (!window.supabaseClient || !this.currentUser) return;
             
-            // Try to get user profile
             const { data: profile, error } = await window.supabaseClient
                 .from('user_profiles')
-                .select('full_name, phone')
+                .select('full_name, phone, role')
                 .eq('id', this.currentUser.id)
                 .single();
 
@@ -61,9 +60,30 @@ class AuthManager {
                 this.currentUser.profile = profile;
             }
         } catch (error) {
-            // Profile table might not exist yet, that's okay
             console.log('Profile not found (this is okay if migration not run yet)');
         }
+    }
+
+    isAdmin(userOverride) {
+        const user = userOverride || this.currentUser;
+        if (!user) return false;
+
+        const email = (user.email || '').toLowerCase();
+        const roles = [
+            user.role,
+            user.app_metadata && user.app_metadata.role,
+            user.user_metadata && user.user_metadata.role,
+            user.profile && user.profile.role
+        ]
+            .filter(Boolean)
+            .map(r => String(r).toLowerCase());
+
+        const isRoleAdmin = roles.includes('admin');
+
+        const ADMIN_EMAILS = [];
+        const isEmailAdmin = ADMIN_EMAILS.includes(email);
+
+        return isRoleAdmin || isEmailAdmin;
     }
 
     updateUI() {
@@ -71,6 +91,7 @@ class AuthManager {
         const userSection = document.getElementById('userSection');
         const loginModal = document.getElementById('loginModal');
         const signupModal = document.getElementById('signupModal');
+        const adminBtn = document.getElementById('adminBtn');
 
         if (this.currentUser) {
             // User is logged in
@@ -85,6 +106,9 @@ class AuthManager {
                                       this.currentUser.email || 
                                       'User';
                     userName.textContent = displayName;
+                }
+                if (adminBtn) {
+                    adminBtn.style.display = this.isAdmin() ? 'inline-flex' : 'none';
                 }
             }
             // Close modals if open

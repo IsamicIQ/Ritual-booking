@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Ritual Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #f5f4f0; min-height: 100vh; }
+        .admin-card { padding: 1.25rem; border-radius: 12px; background: #fefdfb; border: 1px solid #e5e3df; margin-bottom: 1.5rem; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .admin-table th, .admin-table td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #e5e3df; }
+        .admin-table th { color: #3d4a3d; font-weight: 600; }
+        .btn-small { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+        .btn-danger { background: #c0392b; color: white; border: none; }
+        .btn-danger:hover { background: #a0281a; }
+        .admin-message { margin-top: 0.75rem; font-size: 0.9rem; padding: 0.5rem; border-radius: 8px; }
+        .admin-message.success { background: #f2f7f2; color: #5a7a5a; }
+        .admin-message.error { background: #fdf2f2; color: #9b5a5a; }
+    </style>
+</head>
+<body>
+    <nav class="navbar" style="background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div class="container">
+            <div class="nav-content" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="logo">
+                    <a href="index.html"><img src="logo.svg" alt="Ritual Studio" class="logo-img" style="height: 45px;"></a>
+                </div>
+                <div id="authSection" style="display: flex; gap: 1rem;">
+                    <button class="btn-outline" id="loginBtn">Login</button>
+                    <button class="btn-primary" id="signupBtn">Sign Up</button>
+                </div>
+                <div id="userSection" style="display: none; align-items: center; gap: 1rem;">
+                    <span id="userName" style="color: #3d4a3d;"></span>
+                    <a href="admin.html" class="btn-outline" id="adminBtn" style="display:none; text-decoration:none;">Admin</a>
+                    <button class="btn-outline" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <button class="modal-close" id="loginModalClose">&times;</button>
+            <h2>Login</h2>
+            <p class="modal-subtitle" style="color: #6b766b; margin-bottom: 1.5rem;">Sign in to access admin</p>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email *</label>
+                    <input type="email" id="loginEmail" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password *</label>
+                    <input type="password" id="loginPassword" name="password" required placeholder="Your password">
+                </div>
+                <button type="submit" class="btn-primary btn-large" style="width:100%">Login</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; color: #6b766b;">
+                Don't have an account? <a href="#" id="switchToSignup" style="color: #4a5d4a; text-decoration: underline;">Sign up</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal">
+            <button class="modal-close" id="signupModalClose">&times;</button>
+            <h2>Sign Up</h2>
+            <p class="modal-subtitle" style="color: #6b766b; margin-bottom: 1.5rem;">Create a new account</p>
+            <div id="signupError" class="error-message" style="display: none;"></div>
+            <div id="signupSuccess" class="success-message" style="display: none;"></div>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupName">Full Name *</label>
+                    <input type="text" id="signupName" name="name" required placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email *</label>
+                    <input type="email" id="signupEmail" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone Number *</label>
+                    <input type="tel" id="signupPhone" name="phone" required placeholder="0700 000 000">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password *</label>
+                    <input type="password" id="signupPassword" name="password" required placeholder="At least 6 characters" minlength="6">
+                </div>
+                <button type="submit" class="btn-primary btn-large" style="width:100%">Sign Up</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; color: #6b766b;">
+                Already have an account? <a href="#" id="switchToLogin" style="color: #4a5d4a; text-decoration: underline;">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <main class="booking-container">
+        <div id="adminGate" style="max-width: 800px; margin: 2rem auto; text-align: center;">
+            <h1 style="font-size: 2rem; margin-bottom: 0.75rem; color:#3d4a3d;">Admin Area</h1>
+            <p id="adminGateMessage" style="color:#6b766b;">Checking your access…</p>
+        </div>
+
+        <div id="adminContent" style="display:none; max-width: 1100px; margin: 2rem auto;">
+            <section style="margin-bottom: 2rem;">
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color:#3d4a3d;">Manage Classes</h2>
+                <p style="color:#6b766b; margin-bottom: 1rem;">Create and update the classes that appear in the schedule.</p>
+
+                <form id="classForm" class="admin-card">
+                    <input type="hidden" id="classId">
+                    <div class="form-group">
+                        <label for="className">Class Name *</label>
+                        <input type="text" id="className" required placeholder="e.g. Hot Pilates">
+                    </div>
+                    <div class="form-group">
+                        <label for="classDescription">Description</label>
+                        <textarea id="classDescription" rows="2" placeholder="Short description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="classCapacity">Max Capacity</label>
+                        <input type="number" id="classCapacity" min="1" step="1" placeholder="e.g. 12">
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+                        <input type="checkbox" id="classActive" checked>
+                        <label for="classActive" style="margin-bottom:0;">Active</label>
+                    </div>
+                    <button type="submit" class="btn-primary btn-large" style="width:100%;margin-top:0.5rem;">Save Class</button>
+                </form>
+
+                <div class="admin-card">
+                    <h3 style="margin-bottom:0.75rem;color:#3d4a3d;">Existing Classes</h3>
+                    <div id="classesTableEmpty" style="color:#6b766b;font-size:0.95rem;">No classes yet. Add one above.</div>
+                    <table id="classesTable" class="admin-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Capacity</th>
+                                <th>Active</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classesTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color:#3d4a3d;">Manage Time Slots</h2>
+                <p style="color:#6b766b; margin-bottom: 1rem;">Add or edit weekly class times. Changing times affects the recurring schedule.</p>
+
+                <form id="slotForm" class="admin-card">
+                    <input type="hidden" id="slotId">
+                    <div class="form-group">
+                        <label for="slotClassSelect">Class *</label>
+                        <select id="slotClassSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="slotDayOfWeek">Day of Week *</label>
+                        <select id="slotDayOfWeek" required>
+                            <option value="">Select day</option>
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                            <option value="6">Saturday</option>
+                            <option value="0">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Time *</label>
+                        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+                            <input type="time" id="slotStartTime" required>
+                            <span style="color:#6b766b;">to</span>
+                            <input type="time" id="slotEndTime" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="slotInstructor">Instructor</label>
+                        <input type="text" id="slotInstructor" placeholder="Optional instructor name">
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+                        <input type="checkbox" id="slotActive" checked>
+                        <label for="slotActive" style="margin-bottom:0;">Active</label>
+                    </div>
+                    <button type="submit" class="btn-primary btn-large" style="width:100%;margin-top:0.5rem;">Save Time Slot</button>
+                </form>
+
+                <div class="admin-card">
+                    <h3 style="margin-bottom:0.75rem;color:#3d4a3d;">Existing Time Slots</h3>
+                    <div id="slotsTableEmpty" style="color:#6b766b;font-size:0.95rem;">No time slots yet.</div>
+                    <table id="slotsTable" class="admin-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Day</th>
+                                <th>Time</th>
+                                <th>Instructor</th>
+                                <th>Active</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slotsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color:#3d4a3d;">Admin Bookings</h2>
+                <p style="color:#6b766b; margin-bottom: 1rem;">Pre-book clients into classes and cancel individual or whole-class bookings.</p>
+
+                <div class="admin-card">
+                    <h3 style="margin-bottom:0.75rem;color:#3d4a3d;">Pre-book a Client</h3>
+                    <form id="adminBookingForm">
+                        <div class="form-group">
+                            <label for="adminBookingDate">Date *</label>
+                            <input type="date" id="adminBookingDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminBookingClass">Class *</label>
+                            <select id="adminBookingClass" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminBookingSlot">Time Slot *</label>
+                            <select id="adminBookingSlot" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminBookingName">Client Name *</label>
+                            <input type="text" id="adminBookingName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminBookingEmail">Client Email *</label>
+                            <input type="email" id="adminBookingEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminBookingPhone">Client Phone *</label>
+                            <input type="tel" id="adminBookingPhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminBookingPackage">Package Type</label>
+                            <select id="adminBookingPackage">
+                                <option value="single">Single Class</option>
+                                <option value="intro">Intro Package</option>
+                                <option value="monthly">Monthly Package</option>
+                                <option value="3month">3-Month Package</option>
+                                <option value="pack_5">5-Pack</option>
+                                <option value="pack_8">8-Pack</option>
+                                <option value="pack_10">10-Pack</option>
+                                <option value="pack_12">12-Pack</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminBookingNotes">Notes</label>
+                            <textarea id="adminBookingNotes" rows="2" placeholder="Any notes for this client"></textarea>
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+                            <input type="checkbox" id="adminBookingPaid">
+                            <label for="adminBookingPaid" style="margin-bottom:0;">Mark as paid</label>
+                        </div>
+                        <button type="submit" class="btn-primary btn-large" style="width:100%;margin-top:0.5rem;">Create Booking</button>
+                    </form>
+                    <div id="adminBookingMessage" class="admin-message" style="display:none;"></div>
+                </div>
+
+                <div class="admin-card">
+                    <h3 style="margin-bottom:0.75rem;color:#3d4a3d;">Cancel Classes / Bookings</h3>
+                    <p style="color:#6b766b;font-size:0.9rem;margin-bottom:1rem;">Pick a date to see all classes and bookings for that day. Cancel individual bookings or cancel an entire class time.</p>
+                    <form id="adminCancelSearchForm" style="margin-bottom:1rem;">
+                        <div class="form-group">
+                            <label for="adminCancelDate">Date *</label>
+                            <input type="date" id="adminCancelDate" required>
+                        </div>
+                        <button type="submit" class="btn-outline" style="width:100%;">Load Classes &amp; Bookings</button>
+                    </form>
+                    <div id="adminCancelResults"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="email-service.js"></script>
+    <script src="sms-service.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
