@@ -7,6 +7,7 @@
 
 :root {
     /* Ritual Studio - Softer, eye-friendly palette */
+    --title-font: 'Nunito', sans-serif;
     --primary-color: #4a5d4a;
     --primary-soft: #5c6f5c;
     --secondary-color: #f8f7f4;
@@ -15,8 +16,8 @@
     --text-light: #6b766b;
     --white: #fefdfb;
     --border-color: #e5e3df;
-    --bg-light: #f5f4f0;
-    --bg-section: #efede8;
+    --bg-light: #f9bec7;
+    --bg-section: #f5d4d9;
     --shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
     --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
@@ -28,6 +29,15 @@ body {
     background-color: var(--bg-light);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6,
+.logo h1,
+.booking-header h1,
+.page-header h2,
+.day-detail-title,
+.due-classes-title {
+    font-family: var(--title-font);
 }
 
 .container {
@@ -225,7 +235,7 @@ body {
 .about-image-placeholder {
     width: 100%;
     height: 250px;
-    background: linear-gradient(135deg, #f5f4f0 0%, #efede8 100%);
+    background: linear-gradient(135deg, #f9bec7 0%, #f5d4d9 100%);
     border-radius: 8px;
     display: flex;
     align-items: center;
